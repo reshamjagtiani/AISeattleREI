@@ -1,0 +1,1264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Site Visit — Seattle Zoning & Utility Checker</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.2/proj4.js"></script>
+<style>
+  :root{
+    --bg:#0f1720; --panel:#16212c; --panel-2:#1c2833; --border:#2a3a49;
+    --text:#eef3f7; --muted:#9db0c0; --accent:#e8912d; --accent-2:#4fb3a9;
+    --good:#4fb37a; --warn:#e8912d; --bad:#e05c5c; --info:#5a9fd6;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    background:linear-gradient(180deg,#0b121a,#0f1720 400px,var(--bg));
+    color:var(--text); min-height:100vh; padding:0 0 60px;
+  }
+  .masthead-banner{
+    width:100%; background:linear-gradient(135deg, #1a2b3d 0%, #182430 55%, #1f2e2b 100%);
+    border-bottom:2px solid var(--accent); padding:30px 20px 24px; text-align:center;
+  }
+  .masthead-tag{
+    display:inline-block; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800;
+    color:#1a1305; background:var(--accent); padding:5px 13px; border-radius:999px; margin-bottom:16px;
+  }
+  header.brand{
+    max-width:900px; margin:0 auto; padding:22px 20px 0; text-align:center;
+  }
+  .brand-title{
+    font-size:clamp(30px, 6vw, 46px); font-weight:900; line-height:1.08;
+    text-transform:uppercase; letter-spacing:.02em;
+    background:linear-gradient(92deg, #e8912d 0%, #f2b25c 38%, #4fb3a9 100%);
+    -webkit-background-clip:text; background-clip:text; color:transparent;
+  }
+  .brand-title .thin{font-weight:600; opacity:.85;}
+  .brand-sub{
+    margin-top:12px; font-size:13px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; font-weight:600;
+  }
+  .brand-by{
+    margin-top:10px; font-size:15px; color:var(--text); font-weight:600; letter-spacing:.02em;
+  }
+  .brand-copy{
+    margin-top:4px; font-size:11px; color:var(--muted);
+  }
+  .tabs{
+    display:flex; justify-content:center; gap:8px; margin:26px auto 0; max-width:900px; padding:0 20px; flex-wrap:wrap;
+  }
+  .tab{
+    background:transparent; border:1px solid var(--border); color:var(--muted);
+    padding:10px 24px; border-radius:999px; font-weight:700; cursor:pointer;
+    font-size:14px; letter-spacing:.05em; text-transform:uppercase;
+  }
+  .tab.active{background:var(--accent); color:#1a1305; border-color:var(--accent);}
+  .subtabs{display:flex; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap; padding:0 20px;}
+  .subtab{font-size:12.5px; padding:6px 14px; border-radius:8px; border:1px solid var(--border); color:var(--text);}
+  .subtab.active{border-color:var(--accent-2); color:var(--accent-2); font-weight:700;}
+  .subtab.soon{opacity:.5;}
+  .pane{display:none;}
+  .pane.active{display:block;}
+  .soon-card{
+    max-width:640px; margin:40px auto; text-align:center; padding:40px 24px;
+  }
+  .soon-card h3{font-size:20px; margin:0 0 10px;}
+  .soon-card p{color:var(--muted); font-size:14.5px; line-height:1.6; margin:0;}
+  .hero-top{
+    display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
+    text-align:left;
+  }
+  .connect-mini{display:flex; gap:8px; flex-wrap:wrap;}
+  .connect-btn{
+    display:inline-flex; align-items:center; gap:7px; text-decoration:none;
+    padding:7px 14px; border-radius:999px; font-weight:700; font-size:12.5px;
+    border:1px solid var(--border); color:var(--text); background:var(--panel);
+    transition:transform .12s, border-color .12s;
+  }
+  .connect-btn:hover{transform:translateY(-1px);}
+  .connect-btn.contact{border-color:rgba(232,145,45,.55); color:var(--accent);}
+  .connect-btn.insta{
+    border-color:transparent; color:#fff;
+    background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
+  }
+  .connect-btn svg{width:15px; height:15px; flex:none;}
+  .brand-rule{
+    width:72px; height:3px; margin:20px auto 0; border-radius:2px;
+    background:linear-gradient(90deg, var(--accent), var(--accent-2));
+  }
+  header.hero{
+    max-width:900px; margin:0 auto; padding:26px 20px 8px; text-align:center;
+  }
+  .kicker{
+    display:inline-block; font-size:12px; letter-spacing:.14em; text-transform:uppercase;
+    color:var(--accent); font-weight:700; border:1px solid rgba(232,145,45,.4);
+    padding:4px 10px; border-radius:999px; margin-bottom:14px;
+  }
+  h1{font-size:28px; margin:0 0 10px; line-height:1.25;}
+  header.hero p{color:var(--muted); font-size:15px; max-width:620px; margin:0 auto; line-height:1.5;}
+  .wrap{max-width:900px; margin:0 auto; padding:20px;}
+  .search-card{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px;
+    padding:20px; margin-top:18px;
+  }
+  .search-row{display:flex; gap:10px; flex-wrap:wrap;}
+  input[type=text]{
+    flex:1 1 260px; background:var(--panel-2); border:1px solid var(--border); color:var(--text);
+    padding:13px 14px; border-radius:10px; font-size:15px; outline:none;
+  }
+  input[type=text]:focus{border-color:var(--accent);}
+  button{
+    background:var(--accent); color:#1a1305; border:none; font-weight:700; font-size:15px;
+    padding:13px 20px; border-radius:10px; cursor:pointer; white-space:nowrap;
+  }
+  button:disabled{opacity:.55; cursor:not-allowed;}
+  button.secondary{
+    background:transparent; color:var(--text); border:1px solid var(--border); font-weight:600;
+  }
+  .hint{color:var(--muted); font-size:12.5px; margin-top:8px;}
+  #status{margin-top:14px; font-size:13.5px; color:var(--muted); min-height:18px;}
+  #status .step{display:block; margin:2px 0;}
+  #status .done{color:var(--good);}
+  #status .active{color:var(--info);}
+  #status .fail{color:var(--bad);}
+
+  #results{display:none; margin-top:22px;}
+  .grid{display:grid; grid-template-columns:1fr; gap:16px;}
+  @media(min-width:760px){.grid.two{grid-template-columns:1fr 1fr;}}
+
+  .card{
+    background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px;
+  }
+  .card h2{font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 12px; display:flex; align-items:center; gap:8px;}
+  .card h2 .dot{width:8px; height:8px; border-radius:50%; background:var(--accent);}
+
+  #map{height:340px; border-radius:12px; margin-top:4px; border:1px solid var(--border);}
+  .legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; font-size:12px; color:var(--muted);}
+  .legend span{display:inline-flex; align-items:center; gap:6px;}
+  .swatch{width:14px; height:4px; border-radius:2px; display:inline-block;}
+
+  .unit-headline{font-size:15px; color:var(--muted); margin-bottom:6px;}
+  .unit-number{font-size:56px; font-weight:800; line-height:1; color:var(--text); margin:4px 0 2px;}
+  .unit-number span{font-size:22px; color:var(--muted); font-weight:600;}
+  .badge{
+    display:inline-block; font-size:12px; font-weight:700; padding:4px 10px; border-radius:999px; margin:3px 6px 0 0;
+  }
+  .badge.yes{background:rgba(79,179,122,.16); color:var(--good); border:1px solid rgba(79,179,122,.4);}
+  .badge.no{background:rgba(224,92,92,.14); color:var(--bad); border:1px solid rgba(224,92,92,.35);}
+  .badge.unknown{background:rgba(232,145,45,.14); color:var(--accent); border:1px solid rgba(232,145,45,.4);}
+
+  .toggle-row{display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:14px; padding-top:14px; border-top:1px dashed var(--border);}
+  .toggle-row label{font-size:13.5px; color:var(--text); max-width:74%;}
+  .switch{position:relative; width:46px; height:26px; flex:none;}
+  .switch input{opacity:0; width:0; height:0;}
+  .slider{position:absolute; inset:0; background:#2a3a49; border-radius:999px; cursor:pointer; transition:.15s;}
+  .slider:before{content:""; position:absolute; height:20px; width:20px; left:3px; top:3px; background:#eef3f7; border-radius:50%; transition:.15s;}
+  input:checked + .slider{background:var(--accent-2);}
+  input:checked + .slider:before{transform:translateX(20px);}
+
+  .zone-code{font-size:22px; font-weight:800; margin:2px 0;}
+  .zone-desc{color:var(--muted); font-size:13.5px;}
+  .kv{display:flex; justify-content:space-between; gap:12px; padding:7px 0; border-bottom:1px solid var(--border); font-size:13.5px;}
+  .kv:last-child{border-bottom:none;}
+  .kv .k{color:var(--muted);}
+  .kv .v{text-align:right; font-weight:600;}
+
+  ul.lines{list-style:none; margin:0; padding:0;}
+  ul.lines li{
+    padding:10px 0; border-bottom:1px solid var(--border); font-size:13.5px; display:flex; justify-content:space-between; gap:10px;
+  }
+  ul.lines li:last-child{border-bottom:none;}
+  ul.lines .tag{font-size:11px; font-weight:700; text-transform:uppercase; padding:2px 8px; border-radius:6px; flex:none;}
+  .tag.sewer{background:rgba(224,92,92,.16); color:#f0918f;}
+  .tag.storm{background:rgba(90,159,214,.18); color:#8cc0ea;}
+  .tag.water{background:rgba(79,179,122,.16); color:#8fd4ab;}
+  .empty-note{color:var(--muted); font-size:13px; font-style:italic;}
+
+  .manual-card{border:1px dashed rgba(232,145,45,.5); background:rgba(232,145,45,.06);}
+  .manual-card p{font-size:13.5px; color:var(--text); line-height:1.55; margin:0 0 12px;}
+  .btnrow{display:flex; gap:10px; flex-wrap:wrap;}
+
+  .disclaimer{
+    margin-top:18px; font-size:12px; color:var(--muted); line-height:1.6; border-top:1px solid var(--border); padding-top:16px;
+  }
+  .brand-footer{
+    margin-top:26px; text-align:center; font-size:13px; color:var(--muted);
+  }
+  .brand-footer strong{color:var(--text);}
+  .error-box{
+    background:rgba(224,92,92,.1); border:1px solid rgba(224,92,92,.35); color:#f0a6a3;
+    padding:12px 14px; border-radius:10px; font-size:13.5px; margin-top:10px;
+  }
+</style>
+</head>
+<body>
+
+<div class="masthead-banner">
+  <span class="masthead-tag">Proprietary · Original Work</span>
+  <div class="brand-title">Use AI <span class="thin">as a</span> Real Estate Investor</div>
+  <div class="brand-by">By Resham Jagtiani</div>
+  <div class="brand-copy">© Resham Jagtiani. All Rights Reserved.</div>
+</div>
+
+<header class="brand">
+  <div class="brand-rule"></div>
+  <div class="brand-sub">Real workflows · Real parcels · Real numbers</div>
+</header>
+
+<nav class="tabs">
+  <button class="tab active" data-tab="develop">Develop</button>
+  <button class="tab" data-tab="remodel">Remodel</button>
+  <button class="tab" data-tab="underwrite">Underwrite</button>
+</nav>
+<div class="subtabs" id="subtabsDevelop">
+  <span class="subtab active">Land Use &amp; Zoning</span>
+  <span class="subtab soon">More coming soon</span>
+</div>
+
+<div id="pane-develop" class="pane active">
+
+<header class="hero">
+  <div class="hero-top">
+    <div class="kicker">AI Site Visit · Seattle Edition</div>
+    <div class="connect-mini">
+      <a class="connect-btn contact" href="https://ascend21homes.com/#contact" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+        Contact Me
+      </a>
+      <a class="connect-btn insta" href="https://www.instagram.com/resham_jagtiani/" target="_blank" rel="noopener">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg>
+        @resham_jagtiani
+      </a>
+    </div>
+  </div>
+  <h1>Type a Seattle address. See what you can build — and what's under the ground before you buy it.</h1>
+  <p>This pulls live from Seattle & King County's public zoning, middle-housing, sewer, storm, and water GIS data, the same way I check a lot before I underwrite it. Free, no login. Built as a companion to the reel — not a substitute for a real pre-application site visit (PASV) with SDCI, SPU &amp; SCL.</p>
+</header>
+
+<div class="wrap">
+
+  <div class="search-card">
+    <div class="search-row">
+      <input type="text" id="addressInput" placeholder="e.g. 4500 NW 55th St, Seattle, WA" autocomplete="off">
+      <button id="searchBtn">Check this lot</button>
+    </div>
+    <div class="hint"><strong>City of Seattle addresses only</strong> — this tool queries Seattle &amp; King County systems and won't return meaningful results for other cities. Address lookup uses Seattle's official address database (with U.S. Census and OpenStreetMap as backup); parcel, zoning, transit-bonus, and utility data come directly from public government GIS services. Everything is <strong>first-pass and informational only</strong> — always verify actual field conditions and confirm with the official sources linked throughout before making decisions.</div>
+    <div id="status"></div>
+  </div>
+
+  <div id="results">
+
+    <div class="grid two" style="margin-top:16px;">
+
+      <div class="card" style="grid-column:1/-1;">
+        <h2><span class="dot"></span>Map</h2>
+        <div id="map"></div>
+        <div class="legend">
+          <span><span class="swatch" style="background:#e05c5c;"></span>Sewer main</span>
+          <span><span class="swatch" style="background:#5a9fd6;"></span>Storm drain</span>
+          <span><span class="swatch" style="background:#4fb37a;"></span>Water main</span>
+          <span><span class="swatch" style="background:#e8912d; width:10px; height:10px; border-radius:50%;"></span>Parcel / address point</span>
+          <span><span class="swatch" style="background:#b48ce8; width:10px; height:10px; border-radius:50%;"></span>City Light pole</span>
+          <span><span class="swatch" style="background:#6fbf5e; width:10px; height:10px; border-radius:50%;"></span>Tree</span>
+          <span><span class="swatch" style="background:#e8c84d;"></span>Electric line</span>
+          <span><span class="swatch" style="background:#e05c5c; height:6px;"></span>Line crossing the parcel</span>
+          <span><span class="swatch" style="background:#8a97a5; width:14px; height:8px; border-radius:2px;"></span>Existing building</span>
+        </div>
+        <div class="empty-note" style="margin-top:8px;">Note: the pink/red shaded blocks on the base map are OpenStreetMap's standard coloring for commercial &amp; retail districts — that shading ships with the map tiles themselves and is not data from this tool. Only the colored lines, dots, and the orange parcel outline are live lookups.</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot"></span>Middle-housing unit capacity</h2>
+        <div class="unit-headline">Estimated max units under Seattle's HB 1110 rules</div>
+        <div class="unit-number" id="unitNumber">—</div>
+        <div id="transitVerdict" style="display:none; margin:10px 0 4px; padding:10px 12px; border:1px solid var(--border); border-radius:10px; font-size:13.5px; line-height:1.5;"></div>
+        <div id="zoneInfo"></div>
+        <div class="toggle-row">
+          <label for="affordableToggle">Planning 2+ deed-restricted affordable units? (unlocks the 6-unit bonus even outside a transit area)</label>
+          <label class="switch">
+            <input type="checkbox" id="affordableToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+        <div id="capacityNote" class="empty-note" style="margin-top:10px;"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot"></span>Parcel &amp; zoning detail</h2>
+        <div id="parcelDetail"><span class="empty-note">Loading…</span></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot"></span>Sewer &amp; storm mains serving this lot (within 50 ft of the parcel)</h2>
+        <ul class="lines" id="sewerList"><li class="empty-note">Loading…</li></ul>
+        <div id="sewerImplications" style="display:none; margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot"></span>Water mains serving this lot (within 50 ft of the parcel)</h2>
+        <ul class="lines" id="waterList"><li class="empty-note">Loading…</li></ul>
+        <div class="empty-note" style="margin-top:10px;">The public GIS layer includes diameter, material, and install year — but <strong>not flow rate or pressure</strong>. Those aren't published anywhere; for real numbers, request a water availability certificate from SPU (they run a hydrant flow test). Main diameter is your first clue: a 4" main feeding a 6-unit project is a very different conversation than an 8" one.</div>
+      </div>
+
+      <div class="card" style="grid-column:1/-1;">
+        <h2><span class="dot"></span>Electric service — poles, lines &amp; capacity (250 ft)</h2>
+        <ul class="lines" id="polesList"><li class="empty-note">Loading…</li></ul>
+        <div id="elecCapacity" style="display:none; margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
+        <div id="esrContact" style="display:none; margin-top:10px; padding:12px 14px; border:1px solid rgba(79,179,169,.45); background:rgba(79,179,169,.07); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
+        <div class="empty-note" style="margin-top:10px;">Pole locations, heights, line routes, and structures come from Seattle City Light's public GIS. What is <strong>not</strong> public: transformer sizes, existing load on the circuit, and wire clearance heights — those only come out of City Light's engineering review. If a pole sits on your frontage, budget time for that conversation before finalizing height or placement.</div>
+      </div>
+
+      <div class="card">
+        <h2><span class="dot"></span>Trees on &amp; around this parcel</h2>
+        <ul class="lines" id="treesList"><li class="empty-note">Loading…</li></ul>
+        <div class="empty-note" style="margin-top:10px;">From the city's combined tree inventory (street + city-managed + some private trees). Coverage of trees on private lots is incomplete, and the inventory doesn't flag "exceptional trees" — under Seattle's tree ordinance, trees over certain size thresholds can restrict where you build and can't just be removed. Cross-check on <a href="https://aduniverse-seattlecitygis.hub.arcgis.com/pages/feasibility" target="_blank" style="color:#8fd4ab;">the city's ADUniverse property search</a> and get an arborist survey before locking a site plan.</div>
+      </div>
+
+      <div class="card manual-card" style="grid-column:1/-1;">
+        <h2><span class="dot" style="background:var(--accent);"></span>Side sewer sharing — not public GIS data</h2>
+        <p>This is the one that actually got me: whether the <em>side sewer</em> (the lateral connecting this parcel's plumbing to the main) is a private line shared with the lot next door isn't published as live map data anywhere in the city's open GIS — it only exists as a scanned side sewer card on file with SPU. If you're serious about this lot, pull the card before you assume anything.</p>
+        <div class="btnrow">
+          <button class="secondary" onclick="window.open('https://maps.seattle.gov/sidesewercardviewer/','_blank')">Open the official Side Sewer Card Viewer ↗</button>
+          <button class="secondary" id="copyAddrBtn">Copy this address to search there</button>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="disclaimer">
+      <strong>Disclaimers.</strong> (1) <strong>Coverage:</strong> this tool works for addresses within City of Seattle zip codes / city limits only — results for addresses outside Seattle will be missing, wrong, or empty. (2) <strong>First-pass, informational only:</strong> everything shown here is pulled live from various public data sources (Seattle GIS, Seattle Public Utilities, Seattle City Light, King County Assessor, U.S. Census, OpenStreetMap) and is provided for education and preliminary screening only. Public datasets can be incomplete, out of date, or mapped imprecisely. Users are expected to verify actual field conditions on site and to double-check everything against the official public sources linked throughout this page (SDCI, SPU, City Light, King County) before making any purchase, design, permit, or investment decision. This is an independent educational tool — it is not affiliated with or endorsed by the City of Seattle, King County, SPU, or Seattle City Light, and nothing here is legal, engineering, or investment advice. The unit-capacity estimate is a simplified read of the code: setbacks, lot coverage, environmentally critical areas, easements, corner-lot rules, and final unit count are determined by SDCI's official review.
+    </div>
+
+    <div class="brand-footer">
+      Built with AI as part of the <strong>AI Site Visit</strong> series — a new Seattle lot every week.<br>
+      Follow along for how AI actually gets used in real estate development.
+    </div>
+
+    <div style="margin-top:26px; padding-top:18px; border-top:1px solid var(--border); text-align:center; font-size:12.5px; color:var(--muted); line-height:1.7;">
+      <strong style="color:var(--text);">© 2026 Resham Jagtiani · Use AI as a Real Estate Investor · AI Site Visit™ series. All rights reserved.</strong><br>
+      This tool — including its design, text, analysis logic, layout, and presentation — is protected by copyright. No part of it may be copied, reproduced, republished, redistributed, scraped, or used for commercial purposes without prior written permission. Sharing the link is welcome and encouraged; copying the tool is not. Underlying public datasets remain the property of their respective government sources (City of Seattle, King County, U.S. Census Bureau, OpenStreetMap contributors) and are used under their open-data terms.
+    </div>
+
+  </div>
+
+</div>
+
+</div><!-- /pane-develop -->
+
+<div id="pane-remodel" class="pane">
+  <div class="wrap">
+    <div class="card soon-card">
+      <h3>Remodel — coming soon</h3>
+      <p>AI workflows for remodels and additions: permit history pulls, scope-of-work sanity checks, and what triggers substantial-improvement thresholds. Follow along on the AI Site Visit series — this tab unlocks as episodes drop.</p>
+    </div>
+  </div>
+</div>
+
+<div id="pane-underwrite" class="pane">
+  <div class="wrap">
+    <div class="card soon-card">
+      <h3>Underwrite — coming soon</h3>
+      <p>AI-assisted first-pass underwriting: pro forma builders, comp pulls, and sensitivity tables for Seattle small multifamily. Follow along on the AI Site Visit series — this tab unlocks as episodes drop.</p>
+    </div>
+  </div>
+</div>
+
+<script>
+const statusEl = document.getElementById('status');
+const resultsEl = document.getElementById('results');
+const searchBtn = document.getElementById('searchBtn');
+const addressInput = document.getElementById('addressInput');
+let map, mapLayers = [];
+let currentZoneInfo = null; // holds computed eligibility so the affordability toggle can recompute instantly
+
+function logStep(msg, state){
+  const line = document.createElement('span');
+  line.className = 'step ' + (state || '');
+  line.textContent = (state === 'done' ? '✓ ' : state === 'fail' ? '✗ ' : '… ') + msg;
+  statusEl.appendChild(line);
+  return line;
+}
+
+function haversineFeet(lat1, lon1, lat2, lon2){
+  const R = 20902231; // ft
+  const toRad = d => d * Math.PI / 180;
+  const dLat = toRad(lat2-lat1), dLon = toRad(lon2-lon1);
+  const a = Math.sin(dLat/2)**2 + Math.cos(toRad(lat1))*Math.cos(toRad(lat2))*Math.sin(dLon/2)**2;
+  return 2 * R * Math.asin(Math.sqrt(a));
+}
+
+// Seattle/King County GIS services often ignore outSR and return native
+// Washington State Plane North (NAD83, US feet) coordinates instead of
+// lat/lon, even when outSR=4326 is requested. Rather than trust that,
+// every geometry we draw is projected based on whatever spatialReference
+// the response actually reports.
+if (window.proj4) {
+  proj4.defs("EPSG:2926","+proj=lcc +lat_1=47.5 +lat_2=48.73333333333333 +lat_0=47 +lon_0=-120.8333333333333 +x_0=500000.0000000002 +y_0=0 +ellps=GRS80 +datum=NAD83 +to_meter=0.3048006096012192 +no_defs +type=crs");
+}
+
+function pointToLatLng(x, y, wkid){
+  // Returns [lat, lng] for Leaflet, regardless of the source spatial reference.
+  const isGeographic = !wkid || wkid === 4326 || wkid === 4269 || (Math.abs(x) <= 180 && Math.abs(y) <= 90);
+  if (isGeographic) return [y, x];
+  try{
+    const [lon, lat] = proj4('EPSG:2926', 'EPSG:4326', [x, y]);
+    return [lat, lon];
+  } catch(e){
+    return null; // couldn't project — caller should skip this vertex/feature
+  }
+}
+
+function getWkid(json){
+  const sr = json.spatialReference || {};
+  return sr.latestWkid || sr.wkid || null;
+}
+
+// --- Local geometry math (all in feet, small-area approximations) ----------
+const FT_PER_DEG_LAT = 364000;
+function localFeet(lat, lon, lat0, lon0){
+  return { x: (lon - lon0) * FT_PER_DEG_LAT * Math.cos(lat0 * Math.PI/180),
+           y: (lat - lat0) * FT_PER_DEG_LAT };
+}
+// latlngRing: array of [lat, lng]. Returns area in sq ft via the shoelace formula.
+function ringAreaSqFt(latlngRing, lat0, lon0){
+  let area = 0;
+  for(let i = 0; i < latlngRing.length; i++){
+    const p1 = localFeet(latlngRing[i][0], latlngRing[i][1], lat0, lon0);
+    const p2 = localFeet(latlngRing[(i+1) % latlngRing.length][0], latlngRing[(i+1) % latlngRing.length][1], lat0, lon0);
+    area += p1.x * p2.y - p2.x * p1.y;
+  }
+  return Math.abs(area / 2);
+}
+// Approximate lot dimensions: rotate the ring so its longest edge is horizontal,
+// then take the bounding box. Works well for the rectangular lots that dominate
+// Seattle's residential platting; irregular lots get a labeled approximation.
+function approxDimsFt(latlngRing, lat0, lon0){
+  const pts = latlngRing.map(ll => localFeet(ll[0], ll[1], lat0, lon0));
+  let bestLen = 0, bestAng = 0;
+  for(let i = 0; i < pts.length; i++){
+    const a = pts[i], b = pts[(i+1) % pts.length];
+    const len = Math.hypot(b.x - a.x, b.y - a.y);
+    if(len > bestLen){ bestLen = len; bestAng = Math.atan2(b.y - a.y, b.x - a.x); }
+  }
+  const cos = Math.cos(-bestAng), sin = Math.sin(-bestAng);
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  pts.forEach(p => {
+    const rx = p.x * cos - p.y * sin, ry = p.x * sin + p.y * cos;
+    minX = Math.min(minX, rx); maxX = Math.max(maxX, rx);
+    minY = Math.min(minY, ry); maxY = Math.max(maxY, ry);
+  });
+  const d1 = Math.round(maxX - minX), d2 = Math.round(maxY - minY);
+  return { long: Math.max(d1, d2), short: Math.min(d1, d2) };
+}
+// Distance in feet from a point to the nearest vertex-to-vertex segment across
+// a set of polylines (arrays of [lat,lng] paths). Returns {distFt, bearingDeg}.
+function nearestOnPaths(lat, lon, latlngPaths){
+  let best = null;
+  latlngPaths.forEach(path => {
+    for(let i = 0; i < path.length - 1; i++){
+      const a = localFeet(path[i][0], path[i][1], lat, lon);
+      const b = localFeet(path[i+1][0], path[i+1][1], lat, lon);
+      const abx = b.x - a.x, aby = b.y - a.y;
+      const lenSq = abx*abx + aby*aby;
+      let t = lenSq ? ((-a.x)*abx + (-a.y)*aby) / lenSq : 0;
+      t = Math.max(0, Math.min(1, t));
+      const cx = a.x + t*abx, cy = a.y + t*aby;
+      const d = Math.hypot(cx, cy);
+      if(!best || d < best.distFt){
+        best = { distFt: d, bearingDeg: (Math.atan2(cx, cy) * 180/Math.PI + 360) % 360 };
+      }
+    }
+  });
+  return best;
+}
+function compassWord(bearingDeg){
+  const dirs = ['north','northeast','east','southeast','south','southwest','west','northwest'];
+  return dirs[Math.round(bearingDeg / 45) % 8];
+}
+// Ray-casting point-in-polygon on a [lat,lng] ring.
+function pointInRing(lat, lon, ring){
+  let inside = false;
+  for(let i = 0, j = ring.length - 1; i < ring.length; j = i++){
+    const yi = ring[i][0], xi = ring[i][1], yj = ring[j][0], xj = ring[j][1];
+    if(((yi > lat) !== (yj > lat)) && (lon < (xj - xi) * (lat - yi) / (yj - yi) + xi)) inside = !inside;
+  }
+  return inside;
+}
+// How much of a set of polylines lies inside a parcel ring, by sampling each
+// segment. Returns {crossFt, midLat, midLon, segments:[[latlng,latlng],...]}.
+function crossingAnalysis(latlngPaths, ring){
+  let crossFt = 0, sumLat = 0, sumLon = 0, n = 0;
+  const segments = [];
+  latlngPaths.forEach(path => {
+    for(let i = 0; i < path.length - 1; i++){
+      const a = path[i], b = path[i+1];
+      const segLen = haversineFeet(a[0], a[1], b[0], b[1]);
+      if(segLen === 0) continue;
+      const SAMPLES = 12;
+      let insideCount = 0;
+      for(let s = 0; s <= SAMPLES; s++){
+        const t = s / SAMPLES;
+        const la = a[0] + (b[0]-a[0])*t, lo = a[1] + (b[1]-a[1])*t;
+        if(pointInRing(la, lo, ring)){ insideCount++; sumLat += la; sumLon += lo; n++; }
+      }
+      if(insideCount > 0){
+        crossFt += segLen * insideCount / (SAMPLES + 1);
+        segments.push([a, b]);
+      }
+    }
+  });
+  return { crossFt: Math.round(crossFt), midLat: n ? sumLat/n : null, midLon: n ? sumLon/n : null, segments };
+}
+
+function esriRingsToLatLngs(rings, wkid){
+  return rings.map(ring => ring.map(pt => pointToLatLng(pt[0], pt[1], wkid)).filter(Boolean));
+}
+function esriPathsToLatLngs(paths, wkid){
+  return paths.map(path => path.map(pt => pointToLatLng(pt[0], pt[1], wkid)).filter(Boolean));
+}
+
+async function esriQuery(baseUrl, params){
+  const url = baseUrl + '/query?' + new URLSearchParams(Object.assign({
+    f:'json', outSR:4326, returnGeometry:true
+  }, params)).toString();
+  const res = await fetch(url);
+  if(!res.ok) throw new Error('HTTP ' + res.status);
+  const json = await res.json();
+  if(json.error) throw new Error(json.error.message || 'service error');
+  return json;
+}
+
+// --- Geocoding with fallbacks ---------------------------------------------
+// Primary: U.S. Census Bureau geocoder (government service, CORS-enabled,
+// no key, authoritative for US street addresses — verified working for
+// Seattle addresses). Fallbacks: OpenStreetMap Nominatim, then Photon.
+// Each provider is tried in order; the first one that returns a usable
+// coordinate wins. All failures are swallowed so one flaky service never
+// kills the search.
+function normalizeForMAF(rawAddress){
+  // Seattle's Master Address File stores addresses like "6357 37TH AVE SW".
+  // Normalize user input to match: uppercase, strip city/state/zip, expand
+  // nothing, contract long suffixes to the city's abbreviations.
+  let a = rawAddress.toUpperCase();
+  a = a.replace(/,.*$/, '');                     // drop ", Seattle, WA 98126" etc.
+  a = a.replace(/\b(SEATTLE|WASHINGTON|WA)\b/g, '').replace(/\b\d{5}(-\d{4})?\b/g, '');
+  a = a.replace(/\bAVENUE\b/g,'AVE').replace(/\bSTREET\b/g,'ST').replace(/\bPLACE\b/g,'PL')
+       .replace(/\bDRIVE\b/g,'DR').replace(/\bBOULEVARD\b/g,'BLVD').replace(/\bCOURT\b/g,'CT')
+       .replace(/\bLANE\b/g,'LN').replace(/\bROAD\b/g,'RD').replace(/\bTERRACE\b/g,'TER')
+       .replace(/\bHIGHWAY\b/g,'HWY').replace(/\bPARKWAY\b/g,'PKWY');
+  a = a.replace(/\s+/g,' ').trim();
+  return a.replace(/'/g, "''");                  // escape quotes for the SQL where clause
+}
+
+async function geocodeAddress(rawAddress){
+  const address = rawAddress.toLowerCase().includes('seattle')
+    ? rawAddress
+    : rawAddress + ', Seattle, WA';
+
+  // Provider 0: Seattle's own Master Address File (MAF) — the city's official
+  // address points, placed on the actual parcel. Most accurate by far; the
+  // general-purpose geocoders below can land a street-segment interpolation
+  // a block or two off, which matters a lot for parcel-level lookups.
+  try{
+    const norm = normalizeForMAF(rawAddress);
+    if(norm.length >= 3){
+      const url = ENDPOINTS.mafAddresses + '/query?' + new URLSearchParams({
+        f:'json', where:"MAF_ADDRESS LIKE '" + norm + "%'",
+        outFields:'MAF_ADDRESS,ZIP', returnGeometry:'true', outSR:'4326', resultRecordCount:'3'
+      }).toString();
+      const res = await fetch(url);
+      if(res.ok){
+        const json = await res.json();
+        const f = json && !json.error && json.features && json.features[0];
+        if(f && f.geometry){
+          const ll = pointToLatLng(f.geometry.x, f.geometry.y, getWkid(json));
+          if(ll) return { lat: ll[0], lon: ll[1], label: f.attributes.MAF_ADDRESS + ', Seattle WA ' + (f.attributes.ZIP||''), source: 'Seattle official address point — exact' };
+        }
+      }
+    }
+  } catch(e){ /* fall through */ }
+
+  // Provider 1: US Census Bureau
+  try{
+    const url = 'https://geocoding.geo.census.gov/geocoder/locations/onelineaddress?benchmark=Public_AR_Current&format=json&address=' + encodeURIComponent(address);
+    const res = await fetch(url);
+    if(res.ok){
+      const json = await res.json();
+      const m = json && json.result && json.result.addressMatches && json.result.addressMatches[0];
+      if(m && m.coordinates){
+        return { lat: m.coordinates.y, lon: m.coordinates.x, label: m.matchedAddress || address, source: 'US Census' };
+      }
+    }
+  } catch(e){ /* fall through to next provider */ }
+
+  // Provider 2: OpenStreetMap Nominatim (bounded to Seattle)
+  try{
+    const url = 'https://nominatim.openstreetmap.org/search?format=json&limit=1&countrycodes=us&viewbox=-122.4596,47.7341,-122.2244,47.4810&bounded=1&q=' + encodeURIComponent(address);
+    const res = await fetch(url);
+    if(res.ok){
+      const json = await res.json();
+      if(json && json.length > 0){
+        return { lat: parseFloat(json[0].lat), lon: parseFloat(json[0].lon), label: json[0].display_name, source: 'OpenStreetMap' };
+      }
+    }
+  } catch(e){ /* fall through */ }
+
+  // Provider 3: Photon (komoot)
+  try{
+    const url = 'https://photon.komoot.io/api/?limit=1&lat=47.6&lon=-122.33&q=' + encodeURIComponent(address);
+    const res = await fetch(url);
+    if(res.ok){
+      const json = await res.json();
+      const f = json && json.features && json.features[0];
+      if(f && f.geometry && f.geometry.coordinates){
+        const p = f.properties || {};
+        const label = [p.housenumber, p.street, p.city].filter(Boolean).join(' ') || address;
+        return { lat: f.geometry.coordinates[1], lon: f.geometry.coordinates[0], label, source: 'Photon' };
+      }
+    }
+  } catch(e){ /* all providers failed */ }
+
+  return null;
+}
+
+const ENDPOINTS = {
+  mafAddresses: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/TRANSPO_MAFDAP_PV/FeatureServer/0',
+  zoning: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Current_Land_Use_Zoning_Detail_2/FeatureServer/0',
+  transit: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Frequent_Transit_Service_Area/FeatureServer/0',
+  sewerStorm: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SPU_DWW_Mainlines_External/FeatureServer/11',
+  waterMains: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SPU_Water_Mains_and_Services/FeatureServer/1',
+  sclPoles: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Seattle_City_Light_Poles/FeatureServer/0',
+  // City-hosted parcel layer with King County assessor attributes joined in
+  // (official lot sqft, building count, gross sqft, year built) — replaces the
+  // retired King County endpoint used in v1/v2.
+  parcels: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/PARCEL_GEO/FeatureServer/0',
+  buildings: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Building_Outlines_2023/FeatureServer/0',
+  trees: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Combined_Tree_Point/FeatureServer/0',
+  sclLines: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SCL_Lines/FeatureServer/2',
+  sclStructures: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SCL_Structures/FeatureServer/0',
+  esrResidential: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Residential_ESRs_Public_View/FeatureServer/1'
+};
+
+// Query features near a point, with a fallback: if the distance-based query
+// fails (some servers/CDN edges reject the distance+units combo or have a
+// transient hiccup), retry with a plain bounding-box envelope of roughly the
+// same radius. Belt and suspenders so one flaky request doesn't blank a card.
+// Query features within bufferFt of the parcel polygon itself — the right
+// scope for "what serves THIS lot": the fronting street main and alley main,
+// not everything on the block. Falls back to a point-radius query when no
+// parcel polygon is available.
+async function queryNearParcel(endpoint, ringLatLngs, lon, lat, bufferFt, outFields, fallbackRadiusFt){
+  if(ringLatLngs && ringLatLngs.length >= 3){
+    try{
+      return await esriQuery(endpoint, {
+        geometry: JSON.stringify({rings:[ringLatLngs.map(ll => [ll[1], ll[0]])], spatialReference:{wkid:4326}}),
+        geometryType:'esriGeometryPolygon', inSR:4326, spatialRel:'esriSpatialRelIntersects',
+        distance:bufferFt, units:'esriSRUnit_Foot', outFields
+      });
+    } catch(e){ /* fall through to point query */ }
+  }
+  return await queryNearby(endpoint, lon, lat, fallbackRadiusFt, outFields);
+}
+
+async function queryNearby(endpoint, lon, lat, radiusFt, outFields){
+  const common = {geometryType:'esriGeometryPoint', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields};
+  try{
+    return await esriQuery(endpoint, Object.assign({geometry:`${lon},${lat}`, distance:radiusFt, units:'esriSRUnit_Foot'}, common));
+  } catch(e1){
+    const dLat = radiusFt / 364000;                      // ~ft per degree latitude
+    const dLon = dLat / Math.cos(lat * Math.PI/180);
+    return await esriQuery(endpoint, {
+      geometry: JSON.stringify({xmin:lon-dLon, ymin:lat-dLat, xmax:lon+dLon, ymax:lat+dLat, spatialReference:{wkid:4326}}),
+      geometryType:'esriGeometryEnvelope', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields
+    });
+  }
+}
+
+function computeCapacity(zoneRecord, inTransitArea, affordableChecked){
+  const zoningCode = (zoneRecord && (zoneRecord.ZONING || zoneRecord.BASE_ZONE || '')) || '';
+  const zoningDesc = (zoneRecord && (zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || zoneRecord.CATEGORY_DESC || '')) || '';
+  const isNR = /neighborhood residential|^NR/i.test(zoningCode) || /neighborhood residential/i.test(zoningDesc);
+  const isHigherDensity = /^(LR|MR|HR|SM|C|NC|DMC|IC|IG|IB)/i.test(zoningCode);
+
+  if(!zoneRecord){
+    return {status:'unknown', headline:'—', note:'No zoning record returned for this point — try a more specific address.'};
+  }
+  if(isHigherDensity){
+    return {
+      status:'other',
+      headline:'N/A',
+      note:`Zoned ${zoningCode || zoningDesc} — this is already a higher-density multifamily/commercial zone, so HB 1110's 4–6 unit "middle housing" minimum isn't the operative rule here. Capacity is set by that zone's own standards — confirm with SDCI.`
+    };
+  }
+  if(!isNR){
+    return {
+      status:'other',
+      headline:'N/A',
+      note:`Zoned ${zoningCode || zoningDesc || 'unclassified'} — outside standard Neighborhood Residential, so this calculator's HB 1110 logic doesn't apply cleanly. Confirm actual capacity with SDCI.`
+    };
+  }
+  const bonus = inTransitArea || affordableChecked;
+  const max = bonus ? 6 : 4;
+  let verdict;
+  if(inTransitArea){
+    verdict = '✓ This parcel IS on SDCI’s adopted Frequent Transit Service Area list (matched by parcel number) — the 6-unit cap applies automatically, no affordability commitment needed.';
+  } else if(affordableChecked){
+    verdict = '✓ 6 units via the affordability path: this parcel is not on the transit-bonus list, but 2+ deed-restricted affordable units unlocks 6.';
+  } else {
+    verdict = '✗ This parcel is NOT on SDCI’s adopted Frequent Transit Service Area parcel list — so the default cap is 4 units. Flip the toggle below to see the affordability path to 6.';
+  }
+  return {
+    status:'nr', headline: max, zoningCode, zoningDesc, verdict, inTransitArea,
+    note: `Actual buildable unit count also depends on lot size, lot coverage (~50% under the updated code), setbacks, and any environmentally critical areas — this is a capacity ceiling, not a guaranteed design.`
+  };
+}
+
+function renderCapacity(zoneRecord, inTransitArea){
+  const affordableChecked = document.getElementById('affordableToggle').checked;
+  const result = computeCapacity(zoneRecord, inTransitArea, affordableChecked);
+  const numEl = document.getElementById('unitNumber');
+  const noteEl = document.getElementById('capacityNote');
+  if(result.status === 'nr'){
+    numEl.innerHTML = result.headline + '<span> homes max</span>';
+  } else {
+    numEl.innerHTML = result.headline + '<span> — see note</span>';
+  }
+  const verdictEl = document.getElementById('transitVerdict');
+  if(result.verdict){
+    verdictEl.style.display = 'block';
+    verdictEl.textContent = result.verdict + (currentZoneInfo && currentZoneInfo.transitUnknown && !result.inTransitArea
+      ? ' Note: the transit-list check could not be completed for this address, so this is the conservative default — verify on SDCI’s official Frequent Transit Service Area map before ruling 6 units out.' : '');
+    verdictEl.style.borderColor = result.headline === 6 ? 'rgba(79,179,122,.5)' : 'rgba(232,145,45,.5)';
+    verdictEl.style.background = result.headline === 6 ? 'rgba(79,179,122,.08)' : 'rgba(232,145,45,.07)';
+  } else {
+    verdictEl.style.display = 'none';
+  }
+  noteEl.textContent = result.note;
+
+  const zi = document.getElementById('zoneInfo');
+  zi.innerHTML = '';
+  if(result.zoningCode){
+    const b1 = document.createElement('span'); b1.className='badge ' + (result.status==='nr'?'yes':'unknown');
+    b1.textContent = 'Zoned: ' + result.zoningCode;
+    zi.appendChild(b1);
+  }
+  const b2 = document.createElement('span');
+  b2.className = 'badge ' + (inTransitArea ? 'yes' : 'no');
+  b2.textContent = inTransitArea ? 'In Frequent Transit Service Area' : 'Not in transit bonus area';
+  zi.appendChild(b2);
+}
+
+document.getElementById('affordableToggle').addEventListener('change', () => {
+  if(currentZoneInfo) renderCapacity(currentZoneInfo.zoneRecord, currentZoneInfo.inTransitArea);
+});
+
+document.getElementById('copyAddrBtn').addEventListener('click', () => {
+  navigator.clipboard.writeText(addressInput.value || '').then(()=>{
+    const btn = document.getElementById('copyAddrBtn');
+    const original = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    setTimeout(()=>btn.textContent = original, 1500);
+  });
+});
+
+function initMap(lat, lon){
+  if(map){ map.remove(); }
+  map = L.map('map').setView([lat, lon], 18);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 20, attribution: '© OpenStreetMap contributors'
+  }).addTo(map);
+  L.circleMarker([lat, lon], {radius:8, color:'#e8912d', fillColor:'#e8912d', fillOpacity:1, weight:2}).addTo(map)
+    .bindPopup('Searched address');
+}
+
+function drawLines(features, color, wkid){
+  if(!features) return;
+  features.forEach(f => {
+    if(!f.geometry || !f.geometry.paths) return;
+    const latlngs = esriPathsToLatLngs(f.geometry.paths, wkid);
+    if(latlngs.length) L.polyline(latlngs, {color, weight:4, opacity:.85}).addTo(map);
+  });
+}
+
+function drawParcel(feature, wkid){
+  if(!feature || !feature.geometry || !feature.geometry.rings) return;
+  const latlngs = esriRingsToLatLngs(feature.geometry.rings, wkid);
+  if(latlngs.length) L.polygon(latlngs, {color:'#e8912d', weight:2, fillOpacity:.05}).addTo(map);
+}
+
+function renderLineList(elId, features, flowFieldOptions){
+  const el = document.getElementById(elId);
+  el.innerHTML = '';
+  if(!features || features.length === 0){
+    el.innerHTML = '<li class="empty-note">None found within 50 ft of this parcel in the public dataset — service may come from further away (longer, costlier connection). Verify with SPU.</li>';
+    return;
+  }
+  features.slice(0, 8).forEach(f => {
+    const attrs = f.attributes || {};
+    const li = document.createElement('li');
+    let label, tagClass, tagText;
+    if(flowFieldOptions){
+      const flow = (attrs.MNL_PRBL_FLOW_TEXT || '').toString();
+      const isSewer = /sanitary|combined/i.test(flow);
+      tagClass = isSewer ? 'sewer' : 'storm';
+      tagText = isSewer ? 'Sewer' : 'Storm';
+      label = (flow ? flow + ' main' : 'Main line')
+        + (attrs.MNL_OWNER_NAME ? ' · ' + attrs.MNL_OWNER_NAME : '')
+        + (attrs.MNL_MATERIAL_TYPE ? ' · ' + attrs.MNL_MATERIAL_TYPE : '')
+        + (attrs.MNL_WIDTH_IN_NBR ? ' · ' + attrs.MNL_WIDTH_IN_NBR + '"' : '')
+        + (attrs.MNL_UPS_DEPTH_FT_NBR ? ' · ~' + Math.round(attrs.MNL_UPS_DEPTH_FT_NBR) + ' ft deep' : '');
+    } else {
+      tagClass = 'water'; tagText = 'Water';
+      label = 'Water main'
+        + (attrs.MTRL_DESC ? ' · ' + attrs.MTRL_DESC : (attrs.MATERIAL ? ' · ' + attrs.MATERIAL : ''))
+        + (attrs.DIAMETER ? ' · ' + attrs.DIAMETER + '" dia.' : '')
+        + (attrs.INSTALL_YR ? ' · installed ' + attrs.INSTALL_YR : '');
+    }
+    const tag = document.createElement('span'); tag.className = 'tag ' + tagClass; tag.textContent = tagText;
+    const text = document.createElement('span'); text.textContent = label;
+    li.appendChild(tag); li.appendChild(text);
+    el.appendChild(li);
+  });
+}
+
+async function runSearch(){
+  const address = addressInput.value.trim();
+  if(!address){ addressInput.focus(); return; }
+  searchBtn.disabled = true;
+  resultsEl.style.display = 'none';
+  statusEl.innerHTML = '';
+  document.getElementById('parcelDetail').innerHTML = '<span class="empty-note">Loading…</span>';
+  document.getElementById('sewerList').innerHTML = '<li class="empty-note">Loading…</li>';
+  document.getElementById('waterList').innerHTML = '<li class="empty-note">Loading…</li>';
+
+  try{
+    logStep('Finding this address in Seattle…');
+    const geo = await geocodeAddress(address);
+    if(!geo){
+      logStep('Could not find that address. Double-check it’s a City of Seattle address and try adding the ZIP code. (If you’re viewing this inside an app preview window, live data may be blocked — open the page in a regular browser.)', 'fail');
+      searchBtn.disabled = false;
+      return;
+    }
+    const lat = geo.lat, lon = geo.lon;
+    logStep('Found: ' + geo.label + ' (via ' + geo.source + ')', 'done');
+
+    resultsEl.style.display = 'block';
+    initMap(lat, lon);
+
+    // Parcel — awaited, because its polygon and PIN power the dimension math,
+    // the buildable-footprint math, and the tree lookup below.
+    logStep('Looking up parcel, lot dimensions & existing buildings…');
+    let parcelAttrs = null, parcelRingLatLngs = null, lotSqFt = null;
+    try{
+      const pj = await esriQuery(ENDPOINTS.parcels, {geometry:`${lon},${lat}`, geometryType:'esriGeometryPoint', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:'PIN,MAJOR,MINOR,ADDRESS,LOT_SQFT,NR_BLDGS,NR_UNITS,GRSS_SQFT,YR_BUILT_MAX,ZONING'});
+      const f = pj.features && pj.features[0];
+      if(f){
+        parcelAttrs = f.attributes;
+        drawParcel(f, getWkid(pj));
+        if(f.geometry && f.geometry.rings && f.geometry.rings[0]){
+          parcelRingLatLngs = esriRingsToLatLngs(f.geometry.rings, getWkid(pj))[0];
+        }
+        lotSqFt = parcelAttrs.LOT_SQFT || (parcelRingLatLngs ? Math.round(ringAreaSqFt(parcelRingLatLngs, lat, lon)) : null);
+        logStep('Parcel found: PIN ' + (parcelAttrs.PIN || '—'), 'done');
+      } else {
+        logStep('No parcel returned at this point.', 'fail');
+      }
+    } catch(e){
+      logStep('Parcel lookup failed (' + e.message + ') — dimensions & footprint unavailable.', 'fail');
+    }
+
+    // Existing building footprints (joined by parcel PIN, 2023 aerial-derived)
+    let bldgFootprintSqFt = null;
+    if(parcelAttrs && parcelAttrs.PIN){
+      try{
+        const bj = await esriQuery(ENDPOINTS.buildings, {where:"PIN='" + String(parcelAttrs.PIN).replace(/'/g,"''") + "'", outFields:'OUTLINE_ID'});
+        const bWkid = getWkid(bj);
+        let total = 0;
+        (bj.features || []).forEach(bf => {
+          if(bf.geometry && bf.geometry.rings){
+            const rings = esriRingsToLatLngs(bf.geometry.rings, bWkid);
+            if(rings[0] && rings[0].length){
+              // outer ring minus holes
+              total += ringAreaSqFt(rings[0], lat, lon);
+              for(let h = 1; h < rings.length; h++) total -= ringAreaSqFt(rings[h], lat, lon);
+              L.polygon(rings, {color:'#8a97a5', weight:1.5, fillColor:'#8a97a5', fillOpacity:.35}).addTo(map);
+            }
+          }
+        });
+        if((bj.features || []).length > 0) bldgFootprintSqFt = Math.round(total);
+      } catch(e){ /* footprint is best-effort */ }
+    }
+
+    // Parcel & buildable-footprint card
+    {
+      const pd = document.getElementById('parcelDetail');
+      pd.innerHTML = '';
+      const rows = [];
+      if(parcelAttrs){
+        rows.push(['Assessor address on file', parcelAttrs.ADDRESS || '—']);
+        rows.push(['Parcel ID (PIN)', parcelAttrs.PIN || ((parcelAttrs.MAJOR||'') + (parcelAttrs.MINOR||'')) || '—']);
+        rows.push(['Lot size (assessor)', lotSqFt ? lotSqFt.toLocaleString() + ' sq ft' : '—']);
+        if(parcelRingLatLngs && parcelRingLatLngs.length >= 3){
+          const dims = approxDimsFt(parcelRingLatLngs, lat, lon);
+          rows.push(['Approx. lot dimensions', '~' + dims.short + ' ft × ' + dims.long + ' ft (from parcel geometry — irregular lots are approximated)']);
+        }
+        if(parcelAttrs.NR_BLDGS != null) rows.push(['Existing buildings (assessor)', parcelAttrs.NR_BLDGS + (parcelAttrs.NR_UNITS ? ' · ' + parcelAttrs.NR_UNITS + ' unit(s)' : '')]);
+        if(parcelAttrs.GRSS_SQFT) rows.push(['Existing gross sq ft (assessor)', Number(parcelAttrs.GRSS_SQFT).toLocaleString() + ' sq ft']);
+        if(parcelAttrs.YR_BUILT_MAX) rows.push(['Year built (latest)', parcelAttrs.YR_BUILT_MAX]);
+        if(bldgFootprintSqFt != null){
+          rows.push(['Existing footprint (2023 aerial)', bldgFootprintSqFt.toLocaleString() + ' sq ft']);
+          if(lotSqFt){
+            const covPct = Math.round(bldgFootprintSqFt / lotSqFt * 100);
+            const remaining = Math.round(Math.max(0, lotSqFt * 0.5 - bldgFootprintSqFt));
+            rows.push(['Current lot coverage', covPct + '% of lot']);
+            rows.push(['Additional buildable footprint (50% coverage cap)', '~' + remaining.toLocaleString() + ' sq ft' + (covPct >= 50 ? ' — already at/over the cap; new footprint likely requires removing existing structures' : '')]);
+          }
+        } else if(bldgFootprintSqFt === null && parcelAttrs){
+          rows.push(['Existing footprint (2023 aerial)', 'no outlines matched this PIN — vacant lot, new construction since 2023, or an unjoined record']);
+        }
+      }
+      if(rows.length === 0){
+        pd.innerHTML = '<span class="empty-note">No parcel record returned — try a more specific address.</span>';
+      } else {
+        rows.forEach(([k,v]) => {
+          const row = document.createElement('div'); row.className='kv';
+          row.innerHTML = `<span class="k">${k}</span><span class="v">${v}</span>`;
+          pd.appendChild(row);
+        });
+        const note = document.createElement('div');
+        note.className = 'empty-note'; note.style.marginTop = '8px';
+        note.textContent = 'Buildable footprint here is the simple 50%-coverage math (the ADUniverse-style first read). It does not net out setbacks, separation between structures, or critical areas — the real envelope is smaller. Assessor fields can lag recent permits.';
+        pd.appendChild(note);
+      }
+    }
+
+    // Trees on & around the parcel
+    try{
+      // Buffer the parcel by 30 ft: street trees "belonging" to a lot sit in
+      // the planting strip just OUTSIDE the parcel line, so a strict
+      // parcel-only query misses them.
+      const tj = await queryNearParcel(ENDPOINTS.trees, parcelRingLatLngs, lon, lat, 30, 'COMMON_NAME,DBH,OWNERSHIP', 80);
+      const tWkid = getWkid(tj);
+      const feats = tj.features || [];
+      const tl = document.getElementById('treesList');
+      tl.innerHTML = '';
+      if(feats.length === 0){
+        tl.innerHTML = '<li class="empty-note"><strong>No trees in the city inventory for this lot — that does NOT mean the lot has no trees.</strong> The city’s point inventory covers mostly street trees and city-managed trees; trees on private property are usually not in it (they only get recorded through permits or surveys). If you can see trees standing on this lot, assume they’re real and unrecorded: measure trunk diameter at 4.5 ft height on site — anything 6"+ may be regulated and 24"+ is likely protected under Seattle’s tree ordinance — and get an arborist survey before planning removal or siting a structure.</li>';
+      } else {
+        feats.forEach(f => {
+          if(f.geometry && typeof f.geometry.x === 'number'){
+            const ll = pointToLatLng(f.geometry.x, f.geometry.y, tWkid);
+            if(ll) L.circleMarker(ll, {radius:5, color:'#6fbf5e', fillColor:'#6fbf5e', fillOpacity:.9, weight:1}).addTo(map)
+              .bindPopup((f.attributes.COMMON_NAME || 'Tree') + (f.attributes.DBH ? ' · ' + f.attributes.DBH + '" DBH' : ''));
+          }
+        });
+        feats.slice().sort((a,b) => (b.attributes.DBH||0) - (a.attributes.DBH||0)).slice(0, 8).forEach(f => {
+          const a = f.attributes || {};
+          const li = document.createElement('li');
+          const tag = document.createElement('span');
+          tag.className = 'tag'; tag.style.background='rgba(111,191,94,.16)'; tag.style.color='#9ed492';
+          tag.textContent = 'Tree';
+          const big = (a.DBH || 0) >= 24;
+          const text = document.createElement('span');
+          text.textContent = (a.COMMON_NAME || 'Unknown species')
+            + (a.DBH ? ' · ' + a.DBH + '" diameter' : '')
+            + (a.OWNERSHIP ? ' · ' + a.OWNERSHIP : '')
+            + (big ? ' · ⚠ large — possible protected/exceptional tree, verify before planning removal' : '');
+          li.appendChild(tag); li.appendChild(text);
+          tl.appendChild(li);
+        });
+        if(feats.length > 8){
+          const li = document.createElement('li');
+          li.className = 'empty-note';
+          li.textContent = '+ ' + (feats.length - 8) + ' more inventoried trees (all shown on the map).';
+          tl.appendChild(li);
+        }
+      }
+      logStep('Tree inventory retrieved (' + feats.length + ' found).', 'done');
+    } catch(e){
+      document.getElementById('treesList').innerHTML = '<li class="empty-note">Tree lookup failed (' + e.message + ').</li>';
+    }
+
+    // Zoning
+    logStep('Checking zoning…');
+    let zoneRecord = null;
+    try{
+      const zj = await esriQuery(ENDPOINTS.zoning, {geometry:`${lon},${lat}`, geometryType:'esriGeometryPoint', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:'*'});
+      zoneRecord = zj.features && zj.features[0] && zj.features[0].attributes;
+      logStep('Zoning retrieved.', 'done');
+    } catch(e){
+      logStep('Zoning lookup failed (' + e.message + ') — check the Seattle zoning map manually.', 'fail');
+    }
+
+    // Transit bonus — checked by PARCEL NUMBER, not by geometry.
+    // SDCI's Frequent Transit Service Area layer is published as a list of
+    // qualifying parcels (one polygon per PIN), and its server IGNORES spatial
+    // filters — a geometry query returns rows for ANY point on earth, which
+    // made every address look transit-qualified. Matching this parcel's PIN
+    // against the list is both correct and more precise than proximity math.
+    logStep('Checking SDCI’s frequent-transit parcel list (HB 1110 bonus)…');
+    let inTransitArea = false, transitUnknown = false;
+    if(parcelAttrs && parcelAttrs.PIN){
+      try{
+        const tj = await esriQuery(ENDPOINTS.transit, {where:"PIN='" + String(parcelAttrs.PIN).replace(/'/g,"''") + "'", outFields:'PIN', returnGeometry:false, resultRecordCount:1});
+        inTransitArea = !!(tj.features && tj.features.length > 0);
+        logStep('Frequent-transit list: this parcel is ' + (inTransitArea ? 'ON the adopted list — 6-unit cap applies' : 'NOT on the adopted list — default is 4 units'), 'done');
+      } catch(e){
+        transitUnknown = true;
+        logStep('Transit-list lookup failed — showing the conservative 4-unit default; verify on SDCI’s map.', 'fail');
+      }
+    } else {
+      transitUnknown = true;
+      logStep('No parcel PIN available — can’t check the transit list; verify on SDCI’s map.', 'fail');
+    }
+
+    currentZoneInfo = {zoneRecord, inTransitArea, transitUnknown};
+    renderCapacity(zoneRecord, inTransitArea);
+
+    const pd = document.getElementById('parcelDetail');
+    if(zoneRecord){
+      const extra = document.createElement('div');
+      const rows = [
+        ['Zoning code', zoneRecord.ZONING || zoneRecord.BASE_ZONE || '—'],
+        ['Zoning description', zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || '—'],
+        ['MHA / affordability flag on file', zoneRecord.MHA || zoneRecord.MHA_VALUE || 'none listed'],
+      ];
+      rows.forEach(([k,v]) => {
+        const row = document.createElement('div'); row.className='kv';
+        row.innerHTML = `<span class="k">${k}</span><span class="v">${v}</span>`;
+        extra.appendChild(row);
+      });
+      pd.appendChild(extra);
+    } else if(!pd.querySelector('.kv')){
+      pd.innerHTML = '<span class="empty-note">No parcel/zoning record returned — try a more specific address.</span>';
+    }
+
+    // Sewer / storm mains
+    logStep('Pulling sewer & storm mains serving this parcel…');
+    try{
+      const sj = await queryNearParcel(ENDPOINTS.sewerStorm, parcelRingLatLngs, lon, lat, 50, 'MNL_PRBL_FLOW_TEXT,MNL_OWNER_NAME,MNL_MATERIAL_TYPE,MNL_WIDTH_IN_NBR,MNL_UPS_DEPTH_FT_NBR', 250);
+      const feats = sj.features || [];
+      const sewerWkid = getWkid(sj);
+      renderLineList('sewerList', feats, true);
+      const sewerFeats = feats.filter(f => /sanitary|combined/i.test((f.attributes.MNL_PRBL_FLOW_TEXT||f.attributes.PRBL_FLOW_DESC||'')));
+      const stormFeats = feats.filter(f => !sewerFeats.includes(f));
+      drawLines(sewerFeats, '#e05c5c', sewerWkid);
+      drawLines(stormFeats, '#5a9fd6', sewerWkid);
+      logStep('Sewer & storm mains retrieved (' + feats.length + ' found).', 'done');
+
+      // What the sewer location actually means for adding units
+      const impEl = document.getElementById('sewerImplications');
+      const sanPaths = [];
+      sewerFeats.forEach(f => {
+        if(f.geometry && f.geometry.paths) esriPathsToLatLngs(f.geometry.paths, sewerWkid).forEach(p => sanPaths.push(p));
+      });
+      if(sanPaths.length){
+        const nearest = nearestOnPaths(lat, lon, sanPaths);
+        const dims = (parcelRingLatLngs && parcelRingLatLngs.length >= 3) ? approxDimsFt(parcelRingLatLngs, lat, lon) : null;
+        const lotDepth = dims ? dims.long : 100; // typical Seattle residential lot depth fallback
+        const dist = Math.round(nearest.distFt);
+        const dir = compassWord(nearest.bearingDeg);
+        const rearRun = dist + lotDepth;
+        let html = '<strong>What this means for adding units:</strong> The nearest sanitary main is ~' + dist + ' ft to the ' + dir + ' of the address point'
+          + (dist <= 120 ? ' — effectively along this lot’s street frontage.' : '.')
+          + ' A new backyard unit at the rear of the lot' + (dims ? ' (~' + lotDepth + ' ft deep)' : '')
+          + ' would need roughly a ' + rearRun + ' ft side-sewer run to reach that main — typically trenched across the length of the lot, past (or tied into) the existing house’s lateral. Rules of thumb: '
+          + 'gravity needs ~2% fall (about 1 ft of drop per 50 ft of run), so if the backyard sits low relative to the main you’re into a grinder/ejector pump — add real money and maintenance; '
+          + 'most backyard units tie into the <em>existing</em> side sewer rather than making a new street cut (cheaper, but the old lateral’s condition and capacity now carry two dwellings — scope it with a camera); '
+          + 'and if the card shows the lateral is shared with a neighbor, resolving that agreement comes first. A new direct street connection means pavement cut, restoration, and permits — often $15–50k+ before the building itself.';
+        impEl.innerHTML = html;
+        impEl.style.display = 'block';
+      } else {
+        impEl.innerHTML = '<strong>What this means:</strong> No sanitary or combined main appears within 250 ft in the public layer — unusual for Seattle. Either service comes from further away (long, expensive side sewer) or this block has a nonstandard arrangement. Treat sewer as a top diligence item: pull the side sewer card and talk to SPU before pricing this site.';
+        impEl.style.display = 'block';
+      }
+    } catch(e){
+      document.getElementById('sewerList').innerHTML = '<li class="empty-note">Live lookup failed (' + e.message + '). Check the official <a href="https://www.seattle.gov/utilities/construction-resources/water-and-sewer-map" target="_blank" style="color:#8cc0ea;">Seattle Water &amp; Sewer Map</a> directly.</li>';
+      logStep('Sewer/storm lookup failed.', 'fail');
+    }
+
+    // Water mains
+    logStep('Pulling water mains serving this parcel…');
+    try{
+      const wj = await queryNearParcel(ENDPOINTS.waterMains, parcelRingLatLngs, lon, lat, 50, 'MATERIAL,MTRL_DESC,DIAMETER,OWNER_DESC,INSTALL_YR', 250);
+      const feats = wj.features || [];
+      renderLineList('waterList', feats, false);
+      drawLines(feats, '#4fb37a', getWkid(wj));
+      logStep('Water mains retrieved (' + feats.length + ' found).', 'done');
+    } catch(e){
+      document.getElementById('waterList').innerHTML = '<li class="empty-note">Live lookup failed (' + e.message + '). Check the official <a href="https://www.seattle.gov/utilities/construction-resources/water-and-sewer-map" target="_blank" style="color:#8fd4ab;">Seattle Water &amp; Sewer Map</a> directly.</li>';
+      logStep('Water lookup failed.', 'fail');
+    }
+
+    // City Light poles
+    logStep('Pulling City Light poles within 250 ft…');
+    try{
+      const pj2 = await queryNearby(ENDPOINTS.sclPoles, lon, lat, 250, 'ASSET_ID,HEIGHT,SUBTYPECD,HasStreetlight');
+      const feats = pj2.features || [];
+      const poleWkid = getWkid(pj2);
+      const listEl = document.getElementById('polesList');
+      listEl.innerHTML = '';
+      let nearestPoleDistFt = null;
+      if(feats.length === 0){
+        listEl.innerHTML = '<li class="empty-note">No City Light poles within 250 ft in the public dataset — service to this block may be underground or fed from further away. Verify with City Light.</li>';
+      } else {
+        const withDist = feats.map(f => {
+          let distFt = null;
+          if(f.geometry && typeof f.geometry.x === 'number'){
+            const ll = pointToLatLng(f.geometry.x, f.geometry.y, poleWkid);
+            if(ll){
+              distFt = Math.round(haversineFeet(lat, lon, ll[0], ll[1]));
+              L.circleMarker(ll, {radius:6, color:'#b48ce8', fillColor:'#b48ce8', fillOpacity:.95, weight:1}).addTo(map)
+                .bindPopup((f.attributes.SUBTYPECD === 2 ? 'Transmission tower' : 'Distribution pole') + (f.attributes.HEIGHT ? ' · ' + f.attributes.HEIGHT + ' ft pole' : ''));
+            }
+          }
+          return {f, distFt};
+        }).sort((a,b) => (a.distFt ?? 1e9) - (b.distFt ?? 1e9));
+        if(withDist.length && withDist[0].distFt != null) nearestPoleDistFt = withDist[0].distFt;
+        withDist.slice(0, 8).forEach(({f, distFt}) => {
+          const a = f.attributes || {};
+          const li = document.createElement('li');
+          const tag = document.createElement('span');
+          tag.className = 'tag'; tag.style.background='rgba(180,140,232,.18)'; tag.style.color='#cdb2f0';
+          tag.textContent = a.SUBTYPECD === 2 ? 'Tower' : 'Pole';
+          const text = document.createElement('span');
+          text.textContent = (a.HEIGHT ? a.HEIGHT + ' ft pole' : 'Height not listed')
+            + (distFt != null ? ' · ~' + distFt + ' ft from address point' : '')
+            + (String(a.HasStreetlight).toLowerCase() === 'yes' || a.HasStreetlight === 'Y' ? ' · has streetlight' : '');
+          li.appendChild(tag); li.appendChild(text);
+          listEl.appendChild(li);
+        });
+      }
+      logStep('City Light poles retrieved (' + feats.length + ' found).', 'done');
+
+      // Electric lines & structures near the lot (best-effort visual context)
+      let lineCount = 0, structTypes = [], wireVerdict = '';
+      try{
+        const lj = await queryNearby(ENDPOINTS.sclLines, lon, lat, 250, 'CONDUCTORTYPE1');
+        const lWkid = getWkid(lj);
+        const linePathsLL = [];
+        (lj.features || []).forEach(f => {
+          if(f.geometry && f.geometry.paths){
+            const latlngs = esriPathsToLatLngs(f.geometry.paths, lWkid);
+            if(latlngs.length){
+              L.polyline(latlngs, {color:'#e8c84d', weight:2.5, opacity:.8, dashArray:'6 4'}).addTo(map);
+              lineCount++;
+              latlngs.forEach(p => linePathsLL.push(p));
+            }
+          }
+        });
+
+        // Does any mapped line actually cross the parcel?
+        if(parcelRingLatLngs && parcelRingLatLngs.length >= 3 && linePathsLL.length){
+          const cross = crossingAnalysis(linePathsLL, parcelRingLatLngs);
+          if(cross.crossFt > 5){
+            // Highlight the crossing segments in red and flag hard
+            cross.segments.forEach(seg => L.polyline(seg, {color:'#e05c5c', weight:5, opacity:.9}).addTo(map));
+            let where = '';
+            if(cross.midLat != null){
+              const cLat = parcelRingLatLngs.reduce((s,p)=>s+p[0],0)/parcelRingLatLngs.length;
+              const cLon = parcelRingLatLngs.reduce((s,p)=>s+p[1],0)/parcelRingLatLngs.length;
+              const v = localFeet(cross.midLat, cross.midLon, cLat, cLon);
+              where = ' across its ' + compassWord((Math.atan2(v.x, v.y)*180/Math.PI+360)%360) + ' portion';
+              L.circleMarker([cross.midLat, cross.midLon], {radius:9, color:'#e05c5c', fillOpacity:0, weight:3}).addTo(map).bindPopup('Mapped line crosses the parcel here');
+            }
+            wireVerdict = '<strong style="color:#f0918f;">⚠ Wires over the lot:</strong> a mapped City Light line crosses this parcel for ~' + cross.crossFt + ' ft' + where + ' (highlighted red on the map). That strip is a real design constraint: you generally cannot build under or close beside energized conductors — vertical and horizontal clearances (which scale with voltage) effectively carve a no-build/height-limited corridor, and City Light won’t energize a structure that violates them. Options are (a) design around the corridor, (b) pay City Light to relocate or underground the span, or (c) if it only serves a neighbor, negotiate — and check title for an easement either way. Wire heights aren’t in public GIS, so have a surveyor shoot the conductors before you set building heights. '
+          } else {
+            // No crossing — measure how close the nearest line comes to the parcel edge
+            let minEdgeFt = null;
+            parcelRingLatLngs.forEach(v => {
+              const near = nearestOnPaths(v[0], v[1], linePathsLL);
+              if(near && (minEdgeFt == null || near.distFt < minEdgeFt)) minEdgeFt = near.distFt;
+            });
+            wireVerdict = '<strong style="color:#8fd4ab;">✓ Wires over the lot:</strong> no mapped City Light line crosses the parcel itself — lines stay in the street/alley right-of-way' + (minEdgeFt != null ? ', closest approach ~' + Math.round(minEdgeFt) + ' ft from the parcel edge' : '') + '. Height constraints for new builds then come from two places only: the <em>new service drop you add</em> (its attachment point and required clearance over roofs/decks can shape the top floor on the pole side), and horizontal clearance to the street lines for anything tall near the lot line (windows, decks, scaffolding during construction). No mid-lot no-build corridor to design around. '
+          }
+        } else if(lineCount === 0){
+          wireVerdict = '<strong>Wires over the lot:</strong> no City Light lines mapped within 250 ft — likely underground service in this area; height constraints from overhead wires are unlikely, but confirm with City Light. ';
+        }
+      } catch(e){ /* best-effort */ }
+      try{
+        const stj = await queryNearby(ENDPOINTS.sclStructures, lon, lat, 250, 'FACILITY_TYPE');
+        const stWkid = getWkid(stj);
+        (stj.features || []).forEach(f => {
+          const t = (f.attributes && f.attributes.FACILITY_TYPE) || '';
+          if(t && !structTypes.includes(t)) structTypes.push(t);
+          if(f.geometry && typeof f.geometry.x === 'number'){
+            const ll = pointToLatLng(f.geometry.x, f.geometry.y, stWkid);
+            if(ll) L.circleMarker(ll, {radius:4, color:'#e8c84d', fillColor:'#0f1720', fillOpacity:1, weight:2}).addTo(map)
+              .bindPopup('City Light structure' + (t ? ': ' + t : ''));
+          }
+        });
+      } catch(e){ /* best-effort */ }
+
+      // Plain-language capacity implications
+      const nearestPoleFt = nearestPoleDistFt;
+      const capEl = document.getElementById('elecCapacity');
+      capEl.innerHTML = (wireVerdict ? wireVerdict + '<br><br>' : '')
+        + '<strong>Can this lot power new builds? What the map can and can’t tell you:</strong> '
+        + (feats.length
+            ? 'Service here is overhead' + (nearestPoleFt != null ? ' — nearest pole is ~' + nearestPoleFt + ' ft from the address point' : '') + (lineCount ? ', with City Light lines mapped along the frontage/alley' : '') + '. '
+            : 'No poles within 250 ft — service may be underground or fed from beyond this radius. ')
+        + 'But the pole is not the constraint — the <em>transformer</em> serving this block is (the gray can on one of these poles, typically 25–50 kVA shared by 4–10 houses), and transformer sizes and existing circuit load are not public data. '
+        + 'The realistic math: two new all-electric units (Seattle’s energy code effectively means heat pumps, electric water heat, induction, EV-ready) each land a 200 A panel; after diversity that’s roughly 10–15 kVA of new demand per unit. Existing house + two new builds can easily outgrow a 25 kVA can — which means City Light upsizes the transformer, and some or all of that cost lands on your project as service-connection / line-extension charges. '
+        + '<strong>How you actually find out:</strong> file an Electric Service Application with City Light early (it’s free to ask) with unit count and panel sizes — their engineering review runs the load calc against the actual transformer and circuit, and that answer is authoritative. Service design + connection is a well-known critical-path item — often months, so submit at feasibility stage, not at permit issuance. '
+        + 'Placement side-effects worth walking the site for: the service drop needs code clearance over roofs and decks (can constrain a rear unit’s height/placement on the pole side of the lot), construction near energized lines triggers a ~10 ft working-clearance rule that complicates crane and scaffold staging, guy wires eat into driveway/parking layouts, and if you’d rather underground the service, the trench, conduit and riser are on your dime.'
+        + (structTypes.length ? ' Mapped City Light structures nearby: ' + structTypes.join(', ').toLowerCase() + '.' : '');
+      capEl.style.display = 'block';
+    } catch(e){
+      document.getElementById('polesList').innerHTML = '<li class="empty-note">Live lookup failed (' + e.message + ').</li>';
+      logStep('Poles lookup failed.', 'fail');
+    }
+
+    // City Light residential Electric Service Rep for this exact address
+    try{
+      const ej = await esriQuery(ENDPOINTS.esrResidential, {geometry:`${lon},${lat}`, geometryType:'esriGeometryPoint', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:'ESR,PHONE,CELL_PHONE,EMAIL,DISTRICT_AREA', returnGeometry:false});
+      const a = ej.features && ej.features[0] && ej.features[0].attributes;
+      if(a && (a.ESR || a.EMAIL)){
+        const esrEl = document.getElementById('esrContact');
+        esrEl.innerHTML = '<strong>Who to actually ask — City Light’s residential Electric Service Rep for this address:</strong> '
+          + (a.ESR || 'See district office')
+          + (a.DISTRICT_AREA ? ' (' + a.DISTRICT_AREA + ' district)' : '')
+          + (a.PHONE ? ' · ' + a.PHONE : '')
+          + (a.CELL_PHONE && a.CELL_PHONE !== a.PHONE ? ' · cell ' + a.CELL_PHONE : '')
+          + (a.EMAIL ? ' · <a href="mailto:' + a.EMAIL + '" style="color:#7fd0c6;">' + a.EMAIL + '</a>' : '')
+          + '. One email with the address, unit count, and planned panel sizes gets you a real answer about transformer capacity — this contact comes straight from City Light’s published service-rep map.';
+        esrEl.style.display = 'block';
+        logStep('City Light service rep found for this district.', 'done');
+      }
+    } catch(e){ /* non-critical */ }
+
+    logStep('Done. Side sewer sharing still needs the official card — see below.', 'done');
+
+  } catch(err){
+    if(String(err.message).includes('Failed to fetch')){
+      logStep('Couldn’t reach the public data services. Check your connection and try again — and if you’re viewing this inside an app preview window, open it in a regular browser instead.', 'fail');
+    } else {
+      logStep('Something went wrong: ' + err.message, 'fail');
+    }
+  } finally {
+    searchBtn.disabled = false;
+  }
+}
+
+searchBtn.addEventListener('click', runSearch);
+addressInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') runSearch(); });
+
+// Primary tab navigation (Develop / Remodel / Underwrite)
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const target = btn.getAttribute('data-tab');
+    document.querySelectorAll('.pane').forEach(p => p.classList.remove('active'));
+    const pane = document.getElementById('pane-' + target);
+    if(pane) pane.classList.add('active');
+    document.getElementById('subtabsDevelop').style.display = (target === 'develop') ? 'flex' : 'none';
+    if(target === 'develop' && map) setTimeout(() => map.invalidateSize(), 60);
+  });
+});
+</script>
+
+</body>
+</html>
