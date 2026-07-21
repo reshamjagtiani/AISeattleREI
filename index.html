@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>AI Site Visit — Seattle Zoning & Utility Checker</title>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/proj4js/2.9.2/proj4.js"></script>
 <style>
@@ -15,56 +18,57 @@
   }
   *{box-sizing:border-box;}
   body{
-    margin:0; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    margin:0; font-family:'Inter',-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    -webkit-font-smoothing:antialiased; text-rendering:optimizeLegibility;
     background:linear-gradient(180deg,#0b121a,#0f1720 400px,var(--bg));
     color:var(--text); min-height:100vh; padding:0 0 60px;
   }
   .masthead-banner{
     width:100%; background:linear-gradient(135deg, #1a2b3d 0%, #182430 55%, #1f2e2b 100%);
-    border-bottom:2px solid var(--accent); padding:30px 20px 24px; text-align:center;
+    border-bottom:2px solid var(--accent); padding:22px 20px 18px; text-align:center;
   }
   .masthead-tag{
-    display:inline-block; font-size:10.5px; letter-spacing:.16em; text-transform:uppercase; font-weight:800;
-    color:#1a1305; background:var(--accent); padding:5px 13px; border-radius:999px; margin-bottom:16px;
+    display:inline-block; font-size:10px; letter-spacing:.09em; text-transform:uppercase; font-weight:600;
+    color:#1a1305; background:var(--accent); padding:4px 11px; border-radius:999px; margin-bottom:12px;
   }
   header.brand{
-    max-width:900px; margin:0 auto; padding:22px 20px 0; text-align:center;
+    max-width:900px; margin:0 auto; padding:18px 20px 0; text-align:center;
   }
   .brand-title{
-    font-size:clamp(30px, 6vw, 46px); font-weight:900; line-height:1.08;
-    text-transform:uppercase; letter-spacing:.02em;
+    font-size:clamp(24px, 4vw, 34px); font-weight:700; line-height:1.2;
+    letter-spacing:-.01em;
     background:linear-gradient(92deg, #e8912d 0%, #f2b25c 38%, #4fb3a9 100%);
     -webkit-background-clip:text; background-clip:text; color:transparent;
   }
-  .brand-title .thin{font-weight:600; opacity:.85;}
+  .brand-title .thin{font-weight:400; opacity:.85;}
   .brand-sub{
-    margin-top:12px; font-size:13px; color:var(--muted); letter-spacing:.06em; text-transform:uppercase; font-weight:600;
+    margin-top:9px; font-size:12px; color:var(--muted); letter-spacing:.03em; text-transform:uppercase; font-weight:500;
   }
   .brand-by{
-    margin-top:10px; font-size:15px; color:var(--text); font-weight:600; letter-spacing:.02em;
+    margin-top:7px; font-size:13px; color:var(--text); font-weight:500;
   }
   .brand-copy{
-    margin-top:4px; font-size:11px; color:var(--muted);
+    margin-top:3px; font-size:10.5px; color:var(--muted); opacity:.8;
   }
   .tabs{
-    display:flex; justify-content:center; gap:8px; margin:26px auto 0; max-width:900px; padding:0 20px; flex-wrap:wrap;
+    display:flex; justify-content:center; gap:8px; margin:18px auto 0; max-width:900px; padding:0 20px; flex-wrap:wrap;
   }
   .tab{
     background:transparent; border:1px solid var(--border); color:var(--muted);
-    padding:10px 24px; border-radius:999px; font-weight:700; cursor:pointer;
-    font-size:14px; letter-spacing:.05em; text-transform:uppercase;
+    padding:8px 20px; border-radius:999px; font-weight:600; cursor:pointer;
+    font-size:13px; letter-spacing:.01em;
   }
   .tab.active{background:var(--accent); color:#1a1305; border-color:var(--accent);}
-  .subtabs{display:flex; justify-content:center; gap:8px; margin-top:12px; flex-wrap:wrap; padding:0 20px;}
-  .subtab{font-size:12.5px; padding:6px 14px; border-radius:8px; border:1px solid var(--border); color:var(--text);}
-  .subtab.active{border-color:var(--accent-2); color:var(--accent-2); font-weight:700;}
+  .subtabs{display:flex; justify-content:center; gap:8px; margin-top:9px; flex-wrap:wrap; padding:0 20px;}
+  .subtab{font-size:12px; padding:5px 12px; border-radius:8px; border:1px solid var(--border); color:var(--text);}
+  .subtab.active{border-color:var(--accent-2); color:var(--accent-2); font-weight:600;}
   .subtab.soon{opacity:.5;}
   .pane{display:none;}
   .pane.active{display:block;}
   .soon-card{
     max-width:640px; margin:40px auto; text-align:center; padding:40px 24px;
   }
-  .soon-card h3{font-size:20px; margin:0 0 10px;}
+  .soon-card h3{font-size:20px; margin:0 0 10px; font-weight:600;}
   .soon-card p{color:var(--muted); font-size:14.5px; line-height:1.6; margin:0;}
   .hero-top{
     display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap;
@@ -73,7 +77,7 @@
   .connect-mini{display:flex; gap:8px; flex-wrap:wrap;}
   .connect-btn{
     display:inline-flex; align-items:center; gap:7px; text-decoration:none;
-    padding:7px 14px; border-radius:999px; font-weight:700; font-size:12.5px;
+    padding:6px 13px; border-radius:999px; font-weight:600; font-size:12px;
     border:1px solid var(--border); color:var(--text); background:var(--panel);
     transition:transform .12s, border-color .12s;
   }
@@ -83,21 +87,21 @@
     border-color:transparent; color:#fff;
     background:linear-gradient(45deg, #f09433, #e6683c, #dc2743, #cc2366, #bc1888);
   }
-  .connect-btn svg{width:15px; height:15px; flex:none;}
+  .connect-btn svg{width:14px; height:14px; flex:none;}
   .brand-rule{
-    width:72px; height:3px; margin:20px auto 0; border-radius:2px;
+    width:64px; height:3px; margin:16px auto 0; border-radius:2px;
     background:linear-gradient(90deg, var(--accent), var(--accent-2));
   }
   header.hero{
-    max-width:900px; margin:0 auto; padding:26px 20px 8px; text-align:center;
+    max-width:900px; margin:0 auto; padding:20px 20px 6px; text-align:center;
   }
   .kicker{
-    display:inline-block; font-size:12px; letter-spacing:.14em; text-transform:uppercase;
-    color:var(--accent); font-weight:700; border:1px solid rgba(232,145,45,.4);
-    padding:4px 10px; border-radius:999px; margin-bottom:14px;
+    display:inline-block; font-size:11.5px; letter-spacing:.06em; text-transform:uppercase;
+    color:var(--accent); font-weight:600; border:1px solid rgba(232,145,45,.4);
+    padding:4px 10px; border-radius:999px; margin-bottom:12px;
   }
-  h1{font-size:28px; margin:0 0 10px; line-height:1.25;}
-  header.hero p{color:var(--muted); font-size:15px; max-width:620px; margin:0 auto; line-height:1.5;}
+  h1{font-size:24px; font-weight:700; margin:0 0 8px; line-height:1.32; letter-spacing:-.01em;}
+  header.hero p{color:var(--muted); font-size:14.5px; max-width:620px; margin:0 auto; line-height:1.6;}
   .wrap{max-width:900px; margin:0 auto; padding:20px;}
   .search-card{
     background:var(--panel); border:1px solid var(--border); border-radius:16px;
@@ -131,8 +135,15 @@
   .card{
     background:var(--panel); border:1px solid var(--border); border-radius:16px; padding:20px;
   }
-  .card h2{font-size:14px; text-transform:uppercase; letter-spacing:.06em; color:var(--muted); margin:0 0 12px; display:flex; align-items:center; gap:8px;}
-  .card h2 .dot{width:8px; height:8px; border-radius:50%; background:var(--accent);}
+  .card h2{font-size:16px; text-transform:uppercase; letter-spacing:.05em; color:var(--text); font-weight:700; margin:0 0 14px; display:flex; align-items:center; gap:10px; padding-bottom:10px; border-bottom:1px solid var(--border);}
+  .card h2 .dot{width:10px; height:10px; border-radius:50%; background:var(--accent); box-shadow:0 0 0 4px rgba(232,145,45,.15); flex-shrink:0;}
+  details.note-toggle{margin-top:12px;}
+  details.note-toggle summary{cursor:pointer; font-size:13px; font-weight:600; color:var(--accent-2); list-style:none; display:flex; align-items:center; gap:7px; user-select:none;}
+  details.note-toggle summary::-webkit-details-marker{display:none;}
+  details.note-toggle summary::before{content:'▸'; font-size:11px; display:inline-block; transition:transform .15s ease;}
+  details.note-toggle[open] summary::before{transform:rotate(90deg);}
+  details.note-toggle .note-body{margin-top:10px;}
+  details.note-toggle .btnrow{margin-top:12px;}
 
   #map{height:340px; border-radius:12px; margin-top:4px; border:1px solid var(--border);}
   .legend{display:flex; flex-wrap:wrap; gap:12px; margin-top:10px; font-size:12px; color:var(--muted);}
@@ -211,6 +222,8 @@
   <button class="tab active" data-tab="develop">Develop</button>
   <button class="tab" data-tab="remodel">Remodel</button>
   <button class="tab" data-tab="underwrite">Underwrite</button>
+  <button class="tab" data-tab="operations">Operations</button>
+  <button class="tab" data-tab="design">Design</button>
 </nav>
 <div class="subtabs" id="subtabsDevelop">
   <span class="subtab active">Land Use &amp; Zoning</span>
@@ -294,35 +307,46 @@
         <h2><span class="dot"></span>Sewer &amp; storm mains serving this lot (within 50 ft of the parcel)</h2>
         <ul class="lines" id="sewerList"><li class="empty-note">Loading…</li></ul>
         <div id="sewerImplications" style="display:none; margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
+        <div id="sharedLateralFlag" style="display:none; margin-top:12px; padding:12px 14px; border:1px solid rgba(232,145,45,.5); background:rgba(232,145,45,.08); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
+        <details class="note-toggle">
+          <summary>Side sewer sharing — verify with the official card</summary>
+          <div class="note-body">
+            <p class="empty-note">This tool does check SPU's side-sewer connectivity data for a possible shared lateral automatically — if it finds one, you'll see a flag above. But that check can only ever be a best-effort lead, not a confirmed verdict: the public data records which pipe connects to which, but never who owns each private branch, so it can't fully distinguish a lateral genuinely shared with the lot next door from two branches of this same lot's own plumbing. Ownership and any recorded easement or agreement only exist on the scanned <em>side sewer card</em> on file with SPU. If you're serious about this lot, pull the card and confirm before you assume anything either way.</p>
+            <div class="btnrow">
+              <button class="secondary" onclick="window.open('https://maps.seattle.gov/sidesewercardviewer/','_blank')">Open the official Side Sewer Card Viewer ↗</button>
+              <button class="secondary" id="copyAddrBtn">Copy this address to search there</button>
+            </div>
+          </div>
+        </details>
       </div>
 
       <div class="card">
         <h2><span class="dot"></span>Water mains serving this lot (within 50 ft of the parcel)</h2>
         <ul class="lines" id="waterList"><li class="empty-note">Loading…</li></ul>
-        <div class="empty-note" style="margin-top:10px;">The public GIS layer includes diameter, material, and install year — but <strong>not flow rate or pressure</strong>. Those aren't published anywhere; for real numbers, request a water availability certificate from SPU (they run a hydrant flow test). Main diameter is your first clue: a 4" main feeding a 6-unit project is a very different conversation than an 8" one.</div>
+        <details class="note-toggle">
+          <summary>Notes &amp; how to get real flow/pressure numbers</summary>
+          <div class="empty-note note-body">The public GIS layer includes diameter, material, and install year — but <strong>not flow rate or pressure</strong>, and those aren't published on any map. For real numbers, request a <strong>Water, Drainage &amp; Wastewater Availability Certificate (WAC)</strong> from SPU — their engineering review (and, for fire-flow-sensitive projects, an actual hydrant flow test) is the authoritative answer. To request one: create an account at the <a href="https://services.seattle.gov" target="_blank" style="color:#8fd4ab;">Seattle Services Portal</a>, choose "Public Utilities – Development Services" → record type "Water Availability Certificate," enter the project address and your contact info, a short project description, and upload a site plan (the one required document). SPU emails back if they need more, then sends the WAC by email — no published fee or turnaround time is posted, so ask up front when you submit. More detail on SPU's own <a href="https://www.seattle.gov/utilities/construction-resources/water/water-availability-certificate" target="_blank" style="color:#8fd4ab;">WAC page</a>. In the meantime, main diameter here is still your first clue: a 4" main feeding a 6-unit project is a very different conversation than an 8" one.</div>
+        </details>
       </div>
 
       <div class="card" style="grid-column:1/-1;">
-        <h2><span class="dot"></span>Electric service — poles, lines &amp; capacity (250 ft)</h2>
+        <h2><span class="dot"></span>Electric service — poles, lines &amp; capacity (100 ft)</h2>
         <ul class="lines" id="polesList"><li class="empty-note">Loading…</li></ul>
         <div id="elecCapacity" style="display:none; margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
         <div id="esrContact" style="display:none; margin-top:10px; padding:12px 14px; border:1px solid rgba(79,179,169,.45); background:rgba(79,179,169,.07); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
-        <div class="empty-note" style="margin-top:10px;">Pole locations, heights, line routes, and structures come from Seattle City Light's public GIS. What is <strong>not</strong> public: transformer sizes, existing load on the circuit, and wire clearance heights — those only come out of City Light's engineering review. If a pole sits on your frontage, budget time for that conversation before finalizing height or placement.</div>
+        <details class="note-toggle">
+          <summary>Notes &amp; data limitations</summary>
+          <div class="empty-note note-body">Pole locations, heights, line routes, and structures come from Seattle City Light's public GIS. What is <strong>not</strong> public: transformer sizes, existing load on the circuit, and wire clearance heights — those only come out of City Light's engineering review. If a pole sits on your frontage, budget time for that conversation before finalizing height or placement.</div>
+        </details>
       </div>
 
       <div class="card">
         <h2><span class="dot"></span>Trees on &amp; around this parcel</h2>
         <ul class="lines" id="treesList"><li class="empty-note">Loading…</li></ul>
-        <div class="empty-note" style="margin-top:10px;">From the city's combined tree inventory (street + city-managed + some private trees). Coverage of trees on private lots is incomplete, and the inventory doesn't flag "exceptional trees" — under Seattle's tree ordinance, trees over certain size thresholds can restrict where you build and can't just be removed. Cross-check on <a href="https://aduniverse-seattlecitygis.hub.arcgis.com/pages/feasibility" target="_blank" style="color:#8fd4ab;">the city's ADUniverse property search</a> and get an arborist survey before locking a site plan.</div>
-      </div>
-
-      <div class="card manual-card" style="grid-column:1/-1;">
-        <h2><span class="dot" style="background:var(--accent);"></span>Side sewer sharing — not public GIS data</h2>
-        <p>This is the one that actually got me: whether the <em>side sewer</em> (the lateral connecting this parcel's plumbing to the main) is a private line shared with the lot next door isn't published as live map data anywhere in the city's open GIS — it only exists as a scanned side sewer card on file with SPU. If you're serious about this lot, pull the card before you assume anything.</p>
-        <div class="btnrow">
-          <button class="secondary" onclick="window.open('https://maps.seattle.gov/sidesewercardviewer/','_blank')">Open the official Side Sewer Card Viewer ↗</button>
-          <button class="secondary" id="copyAddrBtn">Copy this address to search there</button>
-        </div>
+        <details class="note-toggle">
+          <summary>Notes &amp; data limitations</summary>
+          <div class="empty-note note-body">From the city's combined tree inventory (street + city-managed + some private trees). Coverage of trees on private lots is incomplete, and the inventory doesn't flag "exceptional trees" — under Seattle's tree ordinance, trees over certain size thresholds can restrict where you build and can't just be removed. Cross-check on <a href="https://aduniverse-seattlecitygis.hub.arcgis.com/pages/feasibility" target="_blank" style="color:#8fd4ab;">the city's ADUniverse property search</a> and get an arborist survey before locking a site plan.</div>
+        </details>
       </div>
 
     </div>
@@ -361,6 +385,24 @@
     <div class="card soon-card">
       <h3>Underwrite — coming soon</h3>
       <p>AI-assisted first-pass underwriting: pro forma builders, comp pulls, and sensitivity tables for Seattle small multifamily. Follow along on the AI Site Visit series — this tab unlocks as episodes drop.</p>
+    </div>
+  </div>
+</div>
+
+<div id="pane-operations" class="pane">
+  <div class="wrap">
+    <div class="card soon-card">
+      <h3>Operations — coming soon</h3>
+      <p>AI workflows for running the property once it's built or acquired: maintenance triage, tenant/vendor communication, and expense tracking for Seattle small multifamily. Follow along on the AI Site Visit series — this tab unlocks as episodes drop.</p>
+    </div>
+  </div>
+</div>
+
+<div id="pane-design" class="pane">
+  <div class="wrap">
+    <div class="card soon-card">
+      <h3>Design — coming soon</h3>
+      <p>AI workflows for early massing and unit-layout exploration: quick floor plate studies, unit mix scenarios, and setback/height envelope checks for Seattle small multifamily. Follow along on the AI Site Visit series — this tab unlocks as episodes drop.</p>
     </div>
   </div>
 </div>
@@ -638,7 +680,11 @@ const ENDPOINTS = {
   trees: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Combined_Tree_Point/FeatureServer/0',
   sclLines: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SCL_Lines/FeatureServer/2',
   sclStructures: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SCL_Structures/FeatureServer/0',
-  esrResidential: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Residential_ESRs_Public_View/FeatureServer/1'
+  esrResidential: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Residential_ESRs_Public_View/FeatureServer/1',
+  // Side sewers & laterals ("non-mainlines" in SPU's own terminology). Carries
+  // NMNL_UPS_FEATURE_KEY / NMNL_DNS_FEATURE_KEY connectivity, which is what
+  // powers the shared-lateral flag below — verified against a real address.
+  sideSewers: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SPU_DWW_Non_Mainlines_External_DSO_view/FeatureServer/2'
 };
 
 // Query features near a point, with a fallback: if the distance-based query
@@ -676,10 +722,36 @@ async function queryNearby(endpoint, lon, lat, radiusFt, outFields){
   }
 }
 
+// Neighborhood Residential zoning check, shared by computeCapacity() and the
+// buildable-footprint display below — kept as one function so both stay in sync.
+function isNRZone(zoneRecord){
+  if(!zoneRecord) return false;
+  const zoningCode = zoneRecord.ZONING || zoneRecord.BASE_ZONE || '';
+  const zoningDesc = zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || zoneRecord.CATEGORY_DESC || '';
+  return /neighborhood residential|^NR/i.test(zoningCode) || /neighborhood residential/i.test(zoningDesc);
+}
+
+// SMC 23.44.010.C — lot coverage cap for principal + accessory structures in
+// Neighborhood Residential zones is UNIT-COUNT DEPENDENT, not a flat 50%:
+//   - 2+ principal and/or detached-ADU dwelling units on the lot -> 50% of lot area.
+//   - 1 (or 0) principal dwelling units, no detached ADUs:
+//       lots >= 5,000 sq ft -> 35% of lot area
+//       lots <  5,000 sq ft -> 1,000 sq ft + 15% of lot area, capped at 50%
+// Verified against the amended code chapter itself (seattle.gov's
+// "oneseattleplanchapter23.44-amended.pdf") — an SDCI summary flyer elsewhere
+// on seattle.gov implies a flat 50% regardless of unit count, which conflicts
+// with the actual code text and appears to be a simplification in that flyer.
+function lotCoverageCapSqFt(lotSqFt, unitCount){
+  if(!lotSqFt) return null;
+  if(unitCount >= 2) return Math.round(lotSqFt * 0.5);
+  if(lotSqFt >= 5000) return Math.round(lotSqFt * 0.35);
+  return Math.round(Math.min(lotSqFt * 0.5, 1000 + lotSqFt * 0.15));
+}
+
 function computeCapacity(zoneRecord, inTransitArea, affordableChecked){
   const zoningCode = (zoneRecord && (zoneRecord.ZONING || zoneRecord.BASE_ZONE || '')) || '';
   const zoningDesc = (zoneRecord && (zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || zoneRecord.CATEGORY_DESC || '')) || '';
-  const isNR = /neighborhood residential|^NR/i.test(zoningCode) || /neighborhood residential/i.test(zoningDesc);
+  const isNR = isNRZone(zoneRecord);
   const isHigherDensity = /^(LR|MR|HR|SM|C|NC|DMC|IC|IG|IB)/i.test(zoningCode);
 
   if(!zoneRecord){
@@ -711,7 +783,7 @@ function computeCapacity(zoneRecord, inTransitArea, affordableChecked){
   }
   return {
     status:'nr', headline: max, zoningCode, zoningDesc, verdict, inTransitArea,
-    note: `Actual buildable unit count also depends on lot size, lot coverage (~50% under the updated code), setbacks, and any environmentally critical areas — this is a capacity ceiling, not a guaranteed design.`
+    note: `Actual buildable unit count also depends on lot size, lot coverage (which itself depends on how many units end up on the lot — see the buildable-footprint section above for the exact caps), setbacks, and any environmentally critical areas — this is a capacity ceiling, not a guaranteed design.`
   };
 }
 
@@ -823,6 +895,123 @@ function renderLineList(elId, features, flowFieldOptions){
   });
 }
 
+// --- Shared side-sewer flag (best-effort, not a verdict) -------------------
+// SPU's side-sewer/lateral layer carries upstream/downstream connectivity
+// keys (NMNL_UPS_FEATURE_KEY / NMNL_DNS_FEATURE_KEY) that let you walk a
+// lateral segment-by-segment toward the main, the same way you'd trace a
+// chain by hand. If THIS parcel's own lateral run merges with a different,
+// separately-keyed private side-sewer branch before reaching the main, that
+// convergence is the real-world signature of a shared side sewer — verified
+// by hand against a real address (950 NW 63rd St / 946), where this exact
+// pattern lined up with a recorded 1986 easement on the property's side
+// sewer card. The field that would fully disambiguate a true merge from an
+// unrelated coincidence (NMNL_DSTNTN_TYPE) isn't populated in the public
+// data, so this only ever produces a FLAG — never a confirmed "shared: yes."
+function findSegmentTouchingParcel(features, ring, lat, lon, wkid){
+  return features.find(f => {
+    if(!f.geometry || !f.geometry.paths) return false;
+    const latlngs = esriPathsToLatLngs(f.geometry.paths, wkid);
+    for(const path of latlngs){
+      for(const pt of path){
+        if(ring && ring.length >= 3 && pointInRing(pt[0], pt[1], ring)) return true;
+        if(!ring && haversineFeet(lat, lon, pt[0], pt[1]) <= 25) return true;
+      }
+    }
+    return false;
+  });
+}
+
+async function checkSharedLateral(parcelRingLatLngs, lon, lat){
+  // Require a real parcel polygon before attempting this check at all. With
+  // no ring, findSegmentTouchingParcel() falls back to "nearest private
+  // lateral within 25 ft of the address point" — and real data has shown
+  // that fallback is unreliable exactly where it matters: dense residential
+  // blocks routinely have two or more separately-keyed private lateral
+  // segments within 25 ft of a single address point (short branch stubs,
+  // cleanouts, secondary fixture tie-ins), and the point-radius match picks
+  // whichever one the API happened to return first — not necessarily this
+  // parcel's own lateral, and not necessarily even the closest one. Rather
+  // than guess at ownership from raw pipe geometry in that situation, skip
+  // the check; it only runs when the parcel ring can actually ground "does
+  // this pipe touch THIS lot" in something real.
+  if(!parcelRingLatLngs || parcelRingLatLngs.length < 3) return null;
+  const outFields = 'NMNL_FEA_KEY,NMNL_UPS_FEATURE_KEY,NMNL_DNS_FEATURE_KEY,NMNL_OWNER_NAME,NMNL_FEATYPE_TEXT';
+  const sj = await queryNearParcel(ENDPOINTS.sideSewers, parcelRingLatLngs, lon, lat, 150, outFields, 300);
+  const wkid = getWkid(sj);
+  // Scope to private SANITARY side sewers only — footing drains and tile
+  // drains are a separate stormwater system, and those merging is normal,
+  // not a sign of a shared sanitary connection with a neighbor.
+  const feats = (sj.features || []).filter(f => f.attributes
+    && f.attributes.NMNL_OWNER_NAME === 'Private'
+    && f.attributes.NMNL_FEATYPE_TEXT === 'Side Sewer');
+  if(!feats.length) return null;
+
+  const byDns = new Map();  // NMNL_DNS_FEATURE_KEY -> [features flowing into it]
+  const byFea = new Map();  // NMNL_FEA_KEY -> feature
+  feats.forEach(f => {
+    const dns = f.attributes.NMNL_DNS_FEATURE_KEY;
+    if(dns != null){ if(!byDns.has(dns)) byDns.set(dns, []); byDns.get(dns).push(f); }
+    if(f.attributes.NMNL_FEA_KEY != null) byFea.set(f.attributes.NMNL_FEA_KEY, f);
+  });
+
+  const start = findSegmentTouchingParcel(feats, parcelRingLatLngs, lat, lon, wkid);
+  if(!start) return null;
+
+  // A feeder branch that lies ENTIRELY inside this same parcel's own
+  // boundary is much more likely to be a second branch of this lot's own
+  // plumbing (a garage, addition, or secondary fixture line tied into the
+  // main run, or an old segment digitized alongside its replacement) than a
+  // neighbor's lateral -- SPU's data labels a segment "Private," never which
+  // private owner, so ownership alone can't tell those apart. A genuinely
+  // shared lateral has to originate on the OTHER side of the property line
+  // and cross in, the way the validated 950 NW 63rd St / 946 case did (the
+  // line was visually traced starting in 946's yard and crossing into
+  // 950's). So only treat a merge as flag-worthy if the feeder extends
+  // outside this parcel's own ring.
+  function segmentInsideRing(f, ring){
+    if(!f.geometry || !f.geometry.paths) return false;
+    const latlngs = esriPathsToLatLngs(f.geometry.paths, wkid);
+    for(const path of latlngs){
+      for(const pt of path){
+        if(!pointInRing(pt[0], pt[1], ring)) return false;
+      }
+    }
+    return true;
+  }
+
+  // Walk this parcel's own lateral downstream toward the main, hop by hop.
+  const subjectKeys = new Set();
+  let current = start, hops = 0;
+  while(current && hops < 15){
+    subjectKeys.add(current.attributes.NMNL_FEA_KEY);
+    const dns = current.attributes.NMNL_DNS_FEATURE_KEY;
+    if(dns == null) break;
+    // Does any OTHER branch (not already part of this parcel's own chain)
+    // also flow into this exact same downstream point?
+    const feeders = (byDns.get(dns) || []).filter(f => !subjectKeys.has(f.attributes.NMNL_FEA_KEY));
+    if(feeders.length){
+      const crossesParcelLine = feeders.filter(f => !segmentInsideRing(f, parcelRingLatLngs));
+      if(crossesParcelLine.length) return { merged: true, mergingSegment: crossesParcelLine[0] };
+      // Every feeder at this junction is fully inside this same parcel --
+      // treat as this lot's own internal plumbing, not a shared-lateral
+      // signature, and keep walking downstream toward the main.
+    }
+    const next = feats.find(f => f.attributes.NMNL_UPS_FEATURE_KEY === dns) || byFea.get(dns);
+    if(!next || subjectKeys.has(next.attributes.NMNL_FEA_KEY)) break;
+    current = next; hops++;
+  }
+  return { merged: false };
+}
+
+function renderSharedLateralFlag(result){
+  const el = document.getElementById('sharedLateralFlag');
+  if(!result || !result.merged){ el.style.display = 'none'; return; }
+  el.innerHTML = '<strong>⚠ Worth checking — possible shared side sewer:</strong> this parcel’s sanitary side sewer appears to merge with a separately-keyed private lateral segment before reaching the public main, based on the connectivity data in SPU’s side-sewer layer. That pattern CAN be the real-world signature of a <em>shared side sewer</em> — two properties running through one physical pipe with a single tap into the main, which usually comes with a recorded easement or maintenance agreement and matters a lot for permitting, re-routing, or adding units. '
+    + 'But it can just as easily be two branches of this same lot’s own plumbing (a garage, addition, or secondary fixture line tied into the main run, or an old segment digitized alongside its replacement) — the public data only labels a segment "Private," never which private owner, so a merge alone can’t tell those two situations apart. '
+    + 'This is a lead, not a confirmed verdict. Verify it yourself: pull this address’s <a href="https://maps.seattle.gov/sidesewercardviewer/" target="_blank" style="color:#f2c98a;">official Side Sewer Card</a> (older cards sometimes note a shared connection and an easement/agreement recording number directly), and if a recording number turns up, look it up on <a href="https://recordsearch.kingcounty.gov/LandmarkWeb/search/index" target="_blank" style="color:#f2c98a;">King County’s recorded-document search</a> to read the actual easement.';
+  el.style.display = 'block';
+}
+
 async function runSearch(){
   const address = addressInput.value.trim();
   if(!address){ addressInput.focus(); return; }
@@ -832,6 +1021,7 @@ async function runSearch(){
   document.getElementById('parcelDetail').innerHTML = '<span class="empty-note">Loading…</span>';
   document.getElementById('sewerList').innerHTML = '<li class="empty-note">Loading…</li>';
   document.getElementById('waterList').innerHTML = '<li class="empty-note">Loading…</li>';
+  document.getElementById('sharedLateralFlag').style.display = 'none';
 
   try{
     logStep('Finding this address in Seattle…');
@@ -854,7 +1044,18 @@ async function runSearch(){
     try{
       const pj = await esriQuery(ENDPOINTS.parcels, {geometry:`${lon},${lat}`, geometryType:'esriGeometryPoint', inSR:4326, spatialRel:'esriSpatialRelIntersects', outFields:'PIN,MAJOR,MINOR,ADDRESS,LOT_SQFT,NR_BLDGS,NR_UNITS,GRSS_SQFT,YR_BUILT_MAX,ZONING'});
       const f = pj.features && pj.features[0];
-      if(f){
+      // Guard against a real failure mode: when the query point doesn't land
+      // cleanly inside an assessed parcel (e.g. the geocoder returned a
+      // street-interpolated point instead of a rooftop point), PARCEL_GEO can
+      // still hand back a "feature" with a blank PIN/ADDRESS and a giant,
+      // multi-ring block-shaped polygon (the unassigned ROW/gap geometry for
+      // that block) instead of a real ~5,000 sq ft lot. Trusting that ring as
+      // "this parcel" silently corrupts everything downstream that assumes a
+      // normal single-lot boundary — lot size, the buildable-footprint math,
+      // and especially the shared-side-sewer check below, which would treat
+      // pipes anywhere in the whole block as "touching this parcel." Only
+      // trust the parcel record when it actually has a PIN.
+      if(f && f.attributes && f.attributes.PIN){
         parcelAttrs = f.attributes;
         drawParcel(f, getWkid(pj));
         if(f.geometry && f.geometry.rings && f.geometry.rings[0]){
@@ -862,6 +1063,8 @@ async function runSearch(){
         }
         lotSqFt = parcelAttrs.LOT_SQFT || (parcelRingLatLngs ? Math.round(ringAreaSqFt(parcelRingLatLngs, lat, lon)) : null);
         logStep('Parcel found: PIN ' + (parcelAttrs.PIN || '—'), 'done');
+      } else if(f){
+        logStep('A record was returned at this point but without a valid parcel PIN (likely an unassigned ROW/gap area, or an imprecise geocode) — treating as no parcel match rather than risk using its geometry.', 'fail');
       } else {
         logStep('No parcel returned at this point.', 'fail');
       }
@@ -911,9 +1114,8 @@ async function runSearch(){
           rows.push(['Existing footprint (2023 aerial)', bldgFootprintSqFt.toLocaleString() + ' sq ft']);
           if(lotSqFt){
             const covPct = Math.round(bldgFootprintSqFt / lotSqFt * 100);
-            const remaining = Math.round(Math.max(0, lotSqFt * 0.5 - bldgFootprintSqFt));
             rows.push(['Current lot coverage', covPct + '% of lot']);
-            rows.push(['Additional buildable footprint (50% coverage cap)', '~' + remaining.toLocaleString() + ' sq ft' + (covPct >= 50 ? ' — already at/over the cap; new footprint likely requires removing existing structures' : '')]);
+            rows.push(['Additional buildable footprint', 'the cap depends on zoning & how many units end up on the lot — see below once zoning loads']);
           }
         } else if(bldgFootprintSqFt === null && parcelAttrs){
           rows.push(['Existing footprint (2023 aerial)', 'no outlines matched this PIN — vacant lot, new construction since 2023, or an unjoined record']);
@@ -929,7 +1131,7 @@ async function runSearch(){
         });
         const note = document.createElement('div');
         note.className = 'empty-note'; note.style.marginTop = '8px';
-        note.textContent = 'Buildable footprint here is the simple 50%-coverage math (the ADUniverse-style first read). It does not net out setbacks, separation between structures, or critical areas — the real envelope is smaller. Assessor fields can lag recent permits.';
+        note.textContent = 'Lot coverage cap depends on zoning and unit count (see the full breakdown below, after zoning loads). This is simplified coverage math — it does not net out setbacks, separation between structures, or critical areas, so the real buildable envelope is smaller. Assessor fields can lag recent permits.';
         pd.appendChild(note);
       }
     }
@@ -1031,6 +1233,39 @@ async function runSearch(){
         extra.appendChild(row);
       });
       pd.appendChild(extra);
+
+      // Unit-count-dependent lot coverage cap (SMC 23.44.010.C) — see
+      // lotCoverageCapSqFt() above for the source and the exact thresholds.
+      if(lotSqFt && isNRZone(zoneRecord)){
+        const capBox = document.createElement('div');
+        capBox.style.marginTop = '10px';
+        const fmtCap = (cap) => {
+          if(cap == null) return '—';
+          if(bldgFootprintSqFt != null){
+            const remaining = Math.max(0, cap - bldgFootprintSqFt);
+            return cap.toLocaleString() + ' sq ft cap (~' + remaining.toLocaleString() + ' sq ft still buildable' + (bldgFootprintSqFt >= cap ? ' — already at/over this cap' : '') + ')';
+          }
+          return cap.toLocaleString() + ' sq ft cap';
+        };
+        [
+          ['Lot coverage cap — keep to 1 unit', fmtCap(lotCoverageCapSqFt(lotSqFt, 1))],
+          ['Lot coverage cap — build 2+ units', fmtCap(lotCoverageCapSqFt(lotSqFt, 2))],
+        ].forEach(([k,v]) => {
+          const row = document.createElement('div'); row.className='kv';
+          row.innerHTML = `<span class="k">${k}</span><span class="v">${v}</span>`;
+          capBox.appendChild(row);
+        });
+        const covNote = document.createElement('div');
+        covNote.className = 'empty-note'; covNote.style.marginTop = '6px';
+        covNote.textContent = 'Per SMC 23.44.010.C, the 50% lot-coverage cap only applies once 2+ principal and/or detached-ADU dwelling units are on the lot. A single-unit lot is capped lower: 35% of lot area (lots ≥5,000 sq ft) or 1,000 sq ft + 15% of lot area, capped at 50% (lots <5,000 sq ft). This is simplified coverage math only — it doesn’t net out setbacks, structure separation, or critical areas, and it doesn’t confirm the unit count itself is achievable (see the capacity card above for that). Confirm final numbers with SDCI.';
+        capBox.appendChild(covNote);
+        pd.appendChild(capBox);
+      } else if(lotSqFt && zoneRecord && !isNRZone(zoneRecord)){
+        const covNote = document.createElement('div');
+        covNote.className = 'empty-note'; covNote.style.marginTop = '10px';
+        covNote.textContent = 'This parcel is outside Neighborhood Residential zoning, so the unit-count-dependent coverage rule (SMC 23.44.010.C) above doesn’t apply — this zone has its own lot-coverage standards. Confirm with SDCI.';
+        pd.appendChild(covNote);
+      }
     } else if(!pd.querySelector('.kv')){
       pd.innerHTML = '<span class="empty-note">No parcel/zoning record returned — try a more specific address.</span>';
     }
@@ -1061,12 +1296,25 @@ async function runSearch(){
         const dist = Math.round(nearest.distFt);
         const dir = compassWord(nearest.bearingDeg);
         const rearRun = dist + lotDepth;
+
+        // Ground "how many dwellings share the old lateral" in this parcel's
+        // ACTUAL HB 1110 unit capacity (from the capacity card above), not a
+        // flat "two" — a 4- or 6-unit-capable lot can end up with that many
+        // dwellings draining through one pipe if everything ties into the
+        // existing lateral rather than cutting a new street connection.
+        const sewerAffordableChecked = document.getElementById('affordableToggle').checked;
+        const sewerCap = computeCapacity(zoneRecord, inTransitArea, sewerAffordableChecked);
+        const sewerMaxUnits = (sewerCap.status === 'nr' && typeof sewerCap.headline === 'number') ? sewerCap.headline : null;
+        const dwellingsPhrase = sewerMaxUnits
+          ? 'now carries up to ' + sewerMaxUnits + ' dwellings if this lot is built out to its full HB 1110 capacity (see the capacity card above) — more units sharing one pipe is often where a shared lateral needs upsizing, or a new street connection starts to pencil out instead'
+          : 'now carries more than one dwelling';
+
         let html = '<strong>What this means for adding units:</strong> The nearest sanitary main is ~' + dist + ' ft to the ' + dir + ' of the address point'
           + (dist <= 120 ? ' — effectively along this lot’s street frontage.' : '.')
           + ' A new backyard unit at the rear of the lot' + (dims ? ' (~' + lotDepth + ' ft deep)' : '')
           + ' would need roughly a ' + rearRun + ' ft side-sewer run to reach that main — typically trenched across the length of the lot, past (or tied into) the existing house’s lateral. Rules of thumb: '
           + 'gravity needs ~2% fall (about 1 ft of drop per 50 ft of run), so if the backyard sits low relative to the main you’re into a grinder/ejector pump — add real money and maintenance; '
-          + 'most backyard units tie into the <em>existing</em> side sewer rather than making a new street cut (cheaper, but the old lateral’s condition and capacity now carry two dwellings — scope it with a camera); '
+          + 'most backyard units tie into the <em>existing</em> side sewer rather than making a new street cut (cheaper, but the old lateral’s condition and capacity ' + dwellingsPhrase + ' — scope it with a camera); '
           + 'and if the card shows the lateral is shared with a neighbor, resolving that agreement comes first. A new direct street connection means pavement cut, restoration, and permits — often $15–50k+ before the building itself.';
         impEl.innerHTML = html;
         impEl.style.display = 'block';
@@ -1077,6 +1325,16 @@ async function runSearch(){
     } catch(e){
       document.getElementById('sewerList').innerHTML = '<li class="empty-note">Live lookup failed (' + e.message + '). Check the official <a href="https://www.seattle.gov/utilities/construction-resources/water-and-sewer-map" target="_blank" style="color:#8cc0ea;">Seattle Water &amp; Sewer Map</a> directly.</li>';
       logStep('Sewer/storm lookup failed.', 'fail');
+    }
+
+    // Shared side-sewer flag — best-effort, see checkSharedLateral() above
+    // for why this can only ever be a flag, never a confirmed verdict.
+    try{
+      const shared = await checkSharedLateral(parcelRingLatLngs, lon, lat);
+      renderSharedLateralFlag(shared);
+      if(shared && shared.merged) logStep('Possible shared side sewer detected — flagged below the sewer card for verification.', 'done');
+    } catch(e){
+      document.getElementById('sharedLateralFlag').style.display = 'none';
     }
 
     // Water mains
@@ -1093,16 +1351,16 @@ async function runSearch(){
     }
 
     // City Light poles
-    logStep('Pulling City Light poles within 250 ft…');
+    logStep('Pulling City Light poles within 100 ft…');
     try{
-      const pj2 = await queryNearby(ENDPOINTS.sclPoles, lon, lat, 250, 'ASSET_ID,HEIGHT,SUBTYPECD,HasStreetlight');
+      const pj2 = await queryNearby(ENDPOINTS.sclPoles, lon, lat, 100, 'ASSET_ID,HEIGHT,SUBTYPECD,HasStreetlight');
       const feats = pj2.features || [];
       const poleWkid = getWkid(pj2);
       const listEl = document.getElementById('polesList');
       listEl.innerHTML = '';
       let nearestPoleDistFt = null;
       if(feats.length === 0){
-        listEl.innerHTML = '<li class="empty-note">No City Light poles within 250 ft in the public dataset — service to this block may be underground or fed from further away. Verify with City Light.</li>';
+        listEl.innerHTML = '<li class="empty-note">No City Light poles within 100 ft in the public dataset — service to this block may be underground or fed from further away. Verify with City Light.</li>';
       } else {
         const withDist = feats.map(f => {
           let distFt = null;
@@ -1136,7 +1394,7 @@ async function runSearch(){
       // Electric lines & structures near the lot (best-effort visual context)
       let lineCount = 0, structTypes = [], wireVerdict = '';
       try{
-        const lj = await queryNearby(ENDPOINTS.sclLines, lon, lat, 250, 'CONDUCTORTYPE1');
+        const lj = await queryNearby(ENDPOINTS.sclLines, lon, lat, 100, 'CONDUCTORTYPE1');
         const lWkid = getWkid(lj);
         const linePathsLL = [];
         (lj.features || []).forEach(f => {
@@ -1175,11 +1433,11 @@ async function runSearch(){
             wireVerdict = '<strong style="color:#8fd4ab;">✓ Wires over the lot:</strong> no mapped City Light line crosses the parcel itself — lines stay in the street/alley right-of-way' + (minEdgeFt != null ? ', closest approach ~' + Math.round(minEdgeFt) + ' ft from the parcel edge' : '') + '. Height constraints for new builds then come from two places only: the <em>new service drop you add</em> (its attachment point and required clearance over roofs/decks can shape the top floor on the pole side), and horizontal clearance to the street lines for anything tall near the lot line (windows, decks, scaffolding during construction). No mid-lot no-build corridor to design around. '
           }
         } else if(lineCount === 0){
-          wireVerdict = '<strong>Wires over the lot:</strong> no City Light lines mapped within 250 ft — likely underground service in this area; height constraints from overhead wires are unlikely, but confirm with City Light. ';
+          wireVerdict = '<strong>Wires over the lot:</strong> no City Light lines mapped within 100 ft — likely underground service in this area; height constraints from overhead wires are unlikely, but confirm with City Light. ';
         }
       } catch(e){ /* best-effort */ }
       try{
-        const stj = await queryNearby(ENDPOINTS.sclStructures, lon, lat, 250, 'FACILITY_TYPE');
+        const stj = await queryNearby(ENDPOINTS.sclStructures, lon, lat, 100, 'FACILITY_TYPE');
         const stWkid = getWkid(stj);
         (stj.features || []).forEach(f => {
           const t = (f.attributes && f.attributes.FACILITY_TYPE) || '';
@@ -1195,15 +1453,31 @@ async function runSearch(){
       // Plain-language capacity implications
       const nearestPoleFt = nearestPoleDistFt;
       const capEl = document.getElementById('elecCapacity');
+
+      // Ground the "realistic math" example in this parcel's ACTUAL HB 1110
+      // unit capacity (from the capacity card above) rather than a generic
+      // assumption — a 4- or 6-unit-capable lot adds 3 or 5 new units on top
+      // of the existing home, not a flat "two," and the transformer-sizing
+      // math should scale with that, not undersell it.
+      const affordableCheckedNow = document.getElementById('affordableToggle').checked;
+      const elecCap = computeCapacity(zoneRecord, inTransitArea, affordableCheckedNow);
+      const maxUnitsTotal = (elecCap.status === 'nr' && typeof elecCap.headline === 'number') ? elecCap.headline : null;
+      const addlUnits = maxUnitsTotal ? Math.max(1, maxUnitsTotal - 1) : null;
+      const addlUnitsPhrase = addlUnits
+        ? addlUnits + ' new all-electric unit' + (addlUnits > 1 ? 's' : '') + ' added to the existing home (this lot’s HB 1110 capacity tops out at ' + maxUnitsTotal + ' units total — see the capacity card above; fewer new units means less new demand, more means more)'
+        : 'each new all-electric unit you add';
+      const addlUnitsShort = addlUnits ? addlUnits + ' new build' + (addlUnits > 1 ? 's' : '') : 'new builds';
+
       capEl.innerHTML = (wireVerdict ? wireVerdict + '<br><br>' : '')
         + '<strong>Can this lot power new builds? What the map can and can’t tell you:</strong> '
         + (feats.length
             ? 'Service here is overhead' + (nearestPoleFt != null ? ' — nearest pole is ~' + nearestPoleFt + ' ft from the address point' : '') + (lineCount ? ', with City Light lines mapped along the frontage/alley' : '') + '. '
-            : 'No poles within 250 ft — service may be underground or fed from beyond this radius. ')
+            : 'No poles within 100 ft — service may be underground or fed from beyond this radius. ')
         + 'But the pole is not the constraint — the <em>transformer</em> serving this block is (the gray can on one of these poles, typically 25–50 kVA shared by 4–10 houses), and transformer sizes and existing circuit load are not public data. '
-        + 'The realistic math: two new all-electric units (Seattle’s energy code effectively means heat pumps, electric water heat, induction, EV-ready) each land a 200 A panel; after diversity that’s roughly 10–15 kVA of new demand per unit. Existing house + two new builds can easily outgrow a 25 kVA can — which means City Light upsizes the transformer, and some or all of that cost lands on your project as service-connection / line-extension charges. '
+        + 'The realistic math: ' + addlUnitsPhrase + ' (Seattle’s energy code effectively means heat pumps, electric water heat, induction, EV-ready) each land a 200 A panel; after diversity that’s roughly 10–15 kVA of new demand per unit. Existing house + ' + addlUnitsShort + ' can easily outgrow a 25 kVA can — which means City Light upsizes the transformer, and some or all of that cost lands on your project as service-connection / line-extension charges. '
         + '<strong>How you actually find out:</strong> file an Electric Service Application with City Light early (it’s free to ask) with unit count and panel sizes — their engineering review runs the load calc against the actual transformer and circuit, and that answer is authoritative. Service design + connection is a well-known critical-path item — often months, so submit at feasibility stage, not at permit issuance. '
-        + 'Placement side-effects worth walking the site for: the service drop needs code clearance over roofs and decks (can constrain a rear unit’s height/placement on the pole side of the lot), construction near energized lines triggers a ~10 ft working-clearance rule that complicates crane and scaffold staging, guy wires eat into driveway/parking layouts, and if you’d rather underground the service, the trench, conduit and riser are on your dime.'
+        + 'Placement side-effects worth walking the site for: the service drop needs code clearance over roofs and decks (can constrain a rear unit’s height/placement on the pole side of the lot), construction near energized lines triggers a ~10 ft working-clearance rule that complicates crane and scaffold staging, guy wires eat into driveway/parking layouts, and if you’d rather underground the service, the trench, conduit and riser are on your dime. '
+        + 'One more thing to underwrite, not just note: where the service currently strikes the building (the point the drop attaches, or the meter/service entrance location) is not fixed — City Light can require it to move as part of your project, especially if your new massing, panel upgrade, or unit layout conflicts with the existing attachment point or its clearances. Don’t treat this as a footnote: as part of your Electric Service Application, get City Light to confirm (a) whether the existing strike location works for your planned design or has to relocate, (b) where it would move to if not, and (c) why — the specific clearance, panel-capacity, or routing reason — since that drives whose side of the property line the new run lands on, what gets re-trenched or re-attached, and who pays for it.'
         + (structTypes.length ? ' Mapped City Light structures nearby: ' + structTypes.join(', ').toLowerCase() + '.' : '');
       capEl.style.display = 'block';
     } catch(e){
@@ -1245,7 +1519,7 @@ async function runSearch(){
 searchBtn.addEventListener('click', runSearch);
 addressInput.addEventListener('keydown', (e) => { if(e.key === 'Enter') runSearch(); });
 
-// Primary tab navigation (Develop / Remodel / Underwrite)
+// Primary tab navigation (Develop / Remodel / Underwrite / Operations / Design)
 document.querySelectorAll('.tab').forEach(btn => {
   btn.addEventListener('click', () => {
     document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
