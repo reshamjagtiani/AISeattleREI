@@ -304,6 +304,18 @@
       </div>
 
       <div class="card">
+        <h2><span class="dot"></span>Setback limits by unit count</h2>
+        <div id="setbackDetail"><span class="empty-note">Loading…</span></div>
+        <div class="toggle-row">
+          <label for="alleyToggle">Does this lot abut an alley at the rear?</label>
+          <label class="switch">
+            <input type="checkbox" id="alleyToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
+      </div>
+
+      <div class="card">
         <h2><span class="dot"></span>Sewer &amp; storm mains serving this lot (within 50 ft of the parcel)</h2>
         <ul class="lines" id="sewerList"><li class="empty-note">Loading…</li></ul>
         <div id="sewerImplications" style="display:none; margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px; font-size:13.5px; line-height:1.55;"></div>
@@ -748,6 +760,22 @@ function lotCoverageCapSqFt(lotSqFt, unitCount){
   return Math.round(Math.min(lotSqFt * 0.5, 1000 + lotSqFt * 0.15));
 }
 
+// SMC 23.44.014, Table A — required yards in Neighborhood Residential zones,
+// as amended for HB 1110 middle housing (effective June 30, 2025). Front and
+// rear setbacks are UNIT-COUNT DEPENDENT; side yard is a flat 5 ft regardless
+// of unit count. A lot abutting an alley has no required rear yard at all.
+// Verified against the amended code chapter itself (seattle.gov's
+// "oneseattleplanchapter23.44-amended.pdf", Section 23.44.014 Table A) and
+// cross-checked against an independent architecture-firm summary of the same
+// June 2025 update — both agree on these numbers.
+function setbacksForUnitCount(unitCount, abutsAlley){
+  const threePlus = unitCount >= 3;
+  const front = threePlus ? 10 : 15;
+  const side = 5;
+  const rear = abutsAlley ? 0 : (threePlus ? 10 : 15);
+  return {front, side, rear, abutsAlley};
+}
+
 function computeCapacity(zoneRecord, inTransitArea, affordableChecked){
   const zoningCode = (zoneRecord && (zoneRecord.ZONING || zoneRecord.BASE_ZONE || '')) || '';
   const zoningDesc = (zoneRecord && (zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || zoneRecord.CATEGORY_DESC || '')) || '';
@@ -824,6 +852,44 @@ function renderCapacity(zoneRecord, inTransitArea){
 
 document.getElementById('affordableToggle').addEventListener('change', () => {
   if(currentZoneInfo) renderCapacity(currentZoneInfo.zoneRecord, currentZoneInfo.inTransitArea);
+});
+
+function renderSetbacks(zoneRecord){
+  const el = document.getElementById('setbackDetail');
+  el.innerHTML = '';
+  if(!zoneRecord){
+    el.innerHTML = '<span class="empty-note">No zoning record returned for this point — try a more specific address.</span>';
+    return;
+  }
+  if(!isNRZone(zoneRecord)){
+    const zc = zoneRecord.ZONING || zoneRecord.BASE_ZONE || zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || 'unclassified';
+    el.innerHTML = '<span class="empty-note">Zoned ' + zc + ' — outside Neighborhood Residential, so the SMC 23.44.014 setback table (unit-count-dependent front/rear yards) doesn’t apply here; this zone has its own setback standards. Confirm with SDCI.</span>';
+    return;
+  }
+  const abutsAlley = document.getElementById('alleyToggle').checked;
+  const oneTwo = setbacksForUnitCount(1, abutsAlley);
+  const threePlus = setbacksForUnitCount(3, abutsAlley);
+  const wrap = document.createElement('div');
+  [
+    ['Front — 1 or 2 units', oneTwo.front + ' ft'],
+    ['Front — 3+ units', threePlus.front + ' ft'],
+    ['Side (each side) — any unit count', oneTwo.side + ' ft'],
+    ['Rear — 1 or 2 units', abutsAlley ? 'No rear yard required (abuts alley)' : oneTwo.rear + ' ft'],
+    ['Rear — 3+ units', abutsAlley ? 'No rear yard required (abuts alley)' : threePlus.rear + ' ft'],
+  ].forEach(([k,v]) => {
+    const row = document.createElement('div'); row.className = 'kv';
+    row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + v + '</span>';
+    wrap.appendChild(row);
+  });
+  el.appendChild(wrap);
+  const note = document.createElement('div');
+  note.className = 'empty-note'; note.style.marginTop = '10px';
+  note.textContent = 'Per SMC 23.44.014, Table A, as amended for HB 1110 middle housing (effective June 30, 2025): front and rear setbacks shrink from 15 ft to 10 ft once a lot has 3+ dwelling units; side yard stays a flat 5 ft regardless of unit count. These are minimum required setbacks, not a guaranteed buildable envelope — corner lots (which have a second front-like setback along the side street), environmentally critical areas, and design review can all add further restrictions beyond this table. Confirm the exact buildable envelope with SDCI before finalizing a site plan.';
+  el.appendChild(note);
+}
+
+document.getElementById('alleyToggle').addEventListener('change', () => {
+  if(currentZoneInfo) renderSetbacks(currentZoneInfo.zoneRecord);
 });
 
 document.getElementById('copyAddrBtn').addEventListener('click', () => {
@@ -1218,6 +1284,7 @@ async function runSearch(){
 
     currentZoneInfo = {zoneRecord, inTransitArea, transitUnknown};
     renderCapacity(zoneRecord, inTransitArea);
+    renderSetbacks(zoneRecord);
 
     const pd = document.getElementById('parcelDetail');
     if(zoneRecord){
