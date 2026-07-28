@@ -248,7 +248,7 @@
   </div>
   <h1>Type a Seattle address. See what you can build — and what's under the ground before you buy it.</h1>
   <p>This pulls live from Seattle & King County's public zoning, middle-housing, sewer, storm, and water GIS data, the same way I check a lot before I underwrite it. Free, no login. Built as a companion to the reel — not a substitute for a real pre-application site visit (PASV) with SDCI, SPU &amp; SCL.</p>
-  <p style="font-size:12.5px; color:var(--muted); margin-top:8px;">The map results below (parcel, zoning boundary, sewer/storm/water mains, electric poles &amp; lines, trees) are queried live from the City's GIS servers every time you run a search. The <strong style="color:var(--text);">regulatory numbers baked into this tool's logic</strong> — HB 1110 unit caps, SMC 23.44.010.C lot-coverage percentages, and SMC 23.44.014 setback distances — were verified against the Seattle Municipal Code text as of <strong style="color:var(--text);">July 23, 2026</strong> and are a static snapshot: they will <strong>not</strong> update automatically if the code is amended after that date. Seattle's Neighborhood Residential rules have changed more than once recently — always cross-check current standards directly with SDCI, SPU &amp; Seattle City Light before relying on this for a purchase, design, or investment decision.</p>
+  <p style="font-size:12.5px; color:var(--muted); margin-top:8px;">The map results below (parcel, zoning boundary, sewer/storm/water mains, electric poles &amp; lines, trees) are queried live from the City's GIS servers every time you run a search. The <strong style="color:var(--text);">regulatory numbers baked into this tool's logic</strong> — HB 1110 unit caps, SMC 23.44.010.C lot-coverage percentages, and SMC 23.44.090 setback distances (renumbered from 23.44.014 as of a January 2026 code reorganization) — were verified against the City's published code summaries as of <strong style="color:var(--text);">July 23, 2026</strong> and are a static snapshot: they will <strong>not</strong> update automatically if the code is amended after that date. Seattle's Neighborhood Residential rules have changed more than once recently — always cross-check current standards directly with SDCI, SPU &amp; Seattle City Light before relying on this for a purchase, design, or investment decision.</p>
 </header>
 
 <div class="wrap">
@@ -314,6 +314,13 @@
             <span class="slider"></span>
           </label>
         </div>
+        <div class="toggle-row">
+          <label for="cornerLotToggle">Corner lot — fronts two streets? (auto-detected estimate from street geometry — override if it's wrong)</label>
+          <label class="switch">
+            <input type="checkbox" id="cornerLotToggle">
+            <span class="slider"></span>
+          </label>
+        </div>
       </div>
 
       <div class="card">
@@ -356,6 +363,7 @@
       <div class="card">
         <h2><span class="dot"></span>Trees on &amp; around this parcel</h2>
         <ul class="lines" id="treesList"><li class="empty-note">Loading…</li></ul>
+        <div class="empty-note" style="margin-top:12px; padding:12px 14px; border:1px dashed var(--border); border-radius:10px;">The list above is individual tree <strong>points</strong> (street trees + city-managed trees) — not a canopy coverage percentage. Seattle's tree canopy data is only published aggregated to large areas (50-acre hexagons, council districts, census tracts) — the City has never published a parcel-level canopy % dataset, so there's no live source this tool can query for "X% canopy on this specific lot." ADUniverse's per-property canopy percentage comes from its own one-time internal GIS overlay of the City's 2016 tree canopy assessment against individual parcels — not a live public API — so for that specific number, check <a href="https://aduniverse-seattlecitygis.hub.arcgis.com/pages/feasibility" target="_blank" style="color:#8fd4ab;">ADUniverse's property search</a> directly with this address.</div>
         <details class="note-toggle">
           <summary>Notes &amp; data limitations</summary>
           <div class="empty-note note-body">From the city's combined tree inventory (street + city-managed + some private trees). Coverage of trees on private lots is incomplete, and the inventory doesn't flag "exceptional trees" — under Seattle's tree ordinance, trees over certain size thresholds can restrict where you build and can't just be removed. Cross-check on <a href="https://aduniverse-seattlecitygis.hub.arcgis.com/pages/feasibility" target="_blank" style="color:#8fd4ab;">the city's ADUniverse property search</a> and get an arborist survey before locking a site plan.</div>
@@ -365,7 +373,7 @@
     </div>
 
     <div class="disclaimer">
-      <strong>Disclaimers.</strong> (1) <strong>Coverage:</strong> this tool works for addresses within City of Seattle zip codes / city limits only — results for addresses outside Seattle will be missing, wrong, or empty. (2) <strong>First-pass, informational only:</strong> everything shown here is pulled live from various public data sources (Seattle GIS, Seattle Public Utilities, Seattle City Light, King County Assessor, U.S. Census, OpenStreetMap) and is provided for education and preliminary screening only. Public datasets can be incomplete, out of date, or mapped imprecisely. Users are expected to verify actual field conditions on site and to double-check everything against the official public sources linked throughout this page (SDCI, SPU, City Light, King County) before making any purchase, design, permit, or investment decision. This is an independent educational tool — it is not affiliated with or endorsed by the City of Seattle, King County, SPU, or Seattle City Light, and nothing here is legal, engineering, or investment advice. The unit-capacity estimate is a simplified read of the code: setbacks, lot coverage, environmentally critical areas, easements, corner-lot rules, and final unit count are determined by SDCI's official review. (3) <strong>Static regulatory logic vs. live data:</strong> the map and utility results above are queried fresh from the City's GIS servers on every search, so they stay current on their own. The <em>regulatory thresholds this tool applies</em> — HB 1110 middle-housing unit caps, SMC 23.44.010.C lot-coverage percentages, and SMC 23.44.014 setback distances — are hardcoded into this tool's logic and were last verified against the Municipal Code text on <strong>July 23, 2026</strong>. This page does not monitor for future code changes, and Seattle's Neighborhood Residential standards have been amended more than once in the recent past. Before relying on any unit count, coverage cap, or setback shown here, confirm it's still current with SDCI, SPU, and Seattle City Light directly.
+      <strong>Disclaimers.</strong> (1) <strong>Coverage:</strong> this tool works for addresses within City of Seattle zip codes / city limits only — results for addresses outside Seattle will be missing, wrong, or empty. (2) <strong>First-pass, informational only:</strong> everything shown here is pulled live from various public data sources (Seattle GIS, Seattle Public Utilities, Seattle City Light, King County Assessor, U.S. Census, OpenStreetMap) and is provided for education and preliminary screening only. Public datasets can be incomplete, out of date, or mapped imprecisely. Users are expected to verify actual field conditions on site and to double-check everything against the official public sources linked throughout this page (SDCI, SPU, City Light, King County) before making any purchase, design, permit, or investment decision. This is an independent educational tool — it is not affiliated with or endorsed by the City of Seattle, King County, SPU, or Seattle City Light, and nothing here is legal, engineering, or investment advice. The unit-capacity estimate is a simplified read of the code: setbacks, lot coverage, environmentally critical areas, easements, corner-lot rules, and final unit count are determined by SDCI's official review. (3) <strong>Static regulatory logic vs. live data:</strong> the map and utility results above are queried fresh from the City's GIS servers on every search, so they stay current on their own. The <em>regulatory thresholds this tool applies</em> — HB 1110 middle-housing unit caps, SMC 23.44.010.C lot-coverage percentages, and SMC 23.44.090 setback distances (renumbered from 23.44.014 in a January 2026 reorganization) — are hardcoded into this tool's logic and were last verified against the City's published code summaries on <strong>July 23, 2026</strong>. This page does not monitor for future code changes, and Seattle's Neighborhood Residential standards have been amended more than once in the recent past. Before relying on any unit count, coverage cap, or setback shown here, confirm it's still current with SDCI, SPU, and Seattle City Light directly.
     </div>
 
     <div class="brand-footer">
@@ -574,6 +582,51 @@ function esriPathsToLatLngs(paths, wkid){
   return paths.map(path => path.map(pt => pointToLatLng(pt[0], pt[1], wkid)).filter(Boolean));
 }
 
+// Best-effort corner-lot / through-lot detection, modeled on the same
+// methodology UW's ADUniverse project used (per its own public source and
+// methodology writeup): count distinct street frontages touching the parcel.
+// ADUniverse computed this ONCE in 2019 via a static GIS overlay and stored
+// it in their own private database — there's no live API to query it from,
+// so this re-derives the same idea live, from SDOT's street centerline data,
+// using pure segment geometry (orientation) rather than any street-name
+// field (which we couldn't verify). Two frontages roughly perpendicular to
+// each other -> corner lot. Two frontages roughly parallel (opposite sides)
+// -> through-lot. This is a geometric estimate, same as ADUniverse's own
+// disclaimer that their corner-lot flag is "merely an estimate."
+function bearingDeg(a, b){
+  const lat1 = a[0] * Math.PI/180, lat2 = b[0] * Math.PI/180;
+  const dLon = (b[1]-a[1]) * Math.PI/180;
+  const y = Math.sin(dLon) * Math.cos(lat2);
+  const x = Math.cos(lat1)*Math.sin(lat2) - Math.sin(lat1)*Math.cos(lat2)*Math.cos(dLon);
+  let deg = Math.atan2(y, x) * 180/Math.PI;
+  deg = (deg + 360) % 360;
+  return deg % 180; // orientation only — a line and its reverse are the same frontage direction
+}
+function circDist180(a, b){
+  const d = Math.abs(a - b);
+  return Math.min(d, 180 - d);
+}
+function detectLotFrontage(streetFeatures, wkid){
+  if(!streetFeatures || !streetFeatures.length) return {result:'unknown', clusters:0};
+  const orientations = [];
+  streetFeatures.forEach(f => {
+    if(!f.geometry || !f.geometry.paths) return;
+    const latlngs = esriPathsToLatLngs(f.geometry.paths, wkid).flat();
+    if(latlngs.length >= 2) orientations.push(bearingDeg(latlngs[0], latlngs[latlngs.length-1]));
+  });
+  if(!orientations.length) return {result:'unknown', clusters:0};
+  const clusters = [];
+  orientations.forEach(o => {
+    const match = clusters.find(c => circDist180(c, o) < 25);
+    if(!match) clusters.push(o);
+  });
+  if(clusters.length === 1) return {result:'interior', clusters:1};
+  // 2+ distinct frontage directions found — check the first pair's relationship.
+  const d = circDist180(clusters[0], clusters[1]);
+  if(d > 65) return {result:'corner', clusters: clusters.length};
+  return {result:'through', clusters: clusters.length};
+}
+
 async function esriQuery(baseUrl, params){
   const url = baseUrl + '/query?' + new URLSearchParams(Object.assign({
     f:'json', outSR:4326, returnGeometry:true
@@ -697,7 +750,14 @@ const ENDPOINTS = {
   // Side sewers & laterals ("non-mainlines" in SPU's own terminology). Carries
   // NMNL_UPS_FEATURE_KEY / NMNL_DNS_FEATURE_KEY connectivity, which is what
   // powers the shared-lateral flag below — verified against a real address.
-  sideSewers: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SPU_DWW_Non_Mainlines_External_DSO_view/FeatureServer/2'
+  sideSewers: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/SPU_DWW_Non_Mainlines_External_DSO_view/FeatureServer/2',
+  // SDOT's official street centerline layer (Street Network Database), same
+  // ArcGIS org as everything else here — resolved via the item's ArcGIS Hub
+  // page (item id f91318f1cc43489fb0e7aca2fde22899). Used only for corner-lot
+  // / through-lot detection below; exact field names weren't verifiable (the
+  // metadata endpoint wouldn't return), so detection uses segment geometry
+  // (orientation) only, never attribute values.
+  streets: 'https://services.arcgis.com/ZOyb2t4B0UYuYNYH/arcgis/rest/services/Seattle_Streets_1/FeatureServer/0'
 };
 
 // Query features near a point, with a fallback: if the distance-based query
@@ -761,20 +821,38 @@ function lotCoverageCapSqFt(lotSqFt, unitCount){
   return Math.round(Math.min(lotSqFt * 0.5, 1000 + lotSqFt * 0.15));
 }
 
-// SMC 23.44.014, Table A — required yards in Neighborhood Residential zones,
-// as amended for HB 1110 middle housing (effective June 30, 2025). Front and
-// rear setbacks are UNIT-COUNT DEPENDENT; side yard is a flat 5 ft regardless
-// of unit count. A lot abutting an alley has no required rear yard at all.
-// Verified against the amended code chapter itself (seattle.gov's
-// "oneseattleplanchapter23.44-amended.pdf", Section 23.44.014 Table A) and
-// cross-checked against an independent architecture-firm summary of the same
-// June 2025 update — both agree on these numbers.
-function setbacksForUnitCount(unitCount, abutsAlley){
+// SMC 23.44.090 — required yards in Neighborhood Residential zones. This
+// section was RENUMBERED from 23.44.014 as part of Council Bill 120993's
+// reorganization of the NR chapter, effective mid-January 2026 — the same
+// reorg also changed the side-yard standard itself (it's no longer a flat
+// 5 ft). Front and rear setbacks are still unit-count dependent; side yard
+// is now "5 ft average, 3 ft minimum," dropping to a flat 3 ft (and rear to
+// 5 ft for "other structures") on lots under 5,000 sq ft inside a Frequent
+// Transit Service Area — the same transit flag already used by the unit-
+// capacity card above. A lot abutting an alley has no required rear yard.
+// Verified against the City's own "Summary of Updated Rules in Neighborhood
+// Residential Zones" (January 2026), cross-checked across two independently
+// hosted copies of that document, which agreed on every number. NOT yet
+// verified against the raw Municode text of 23.44.090 itself (Municode's
+// content wasn't fetchable from this tool) — the "5 ft for other structures"
+// transit-area carve-out in particular is ambiguously worded as to whether
+// it modifies only accessory structures or the 3+-unit principal-structure
+// rear setback too; confirm that specific edge case with SDCI.
+function setbacksForUnitCount(unitCount, abutsAlley, inTransitArea, lotSqFt){
   const threePlus = unitCount >= 3;
+  const smallTransitLot = !!(inTransitArea && lotSqFt && lotSqFt < 5000);
   const front = threePlus ? 10 : 15;
-  const side = 5;
-  const rear = abutsAlley ? 0 : (threePlus ? 10 : 15);
-  return {front, side, rear, abutsAlley};
+  const sideAvg = smallTransitLot ? 3 : 5;
+  const sideMin = 3;
+  let rear;
+  if(abutsAlley){
+    rear = 0;
+  } else if(threePlus && smallTransitLot){
+    rear = 5;
+  } else {
+    rear = threePlus ? 10 : 15;
+  }
+  return {front, sideAvg, sideMin, rear, abutsAlley, smallTransitLot};
 }
 
 function computeCapacity(zoneRecord, inTransitArea, affordableChecked){
@@ -855,7 +933,7 @@ document.getElementById('affordableToggle').addEventListener('change', () => {
   if(currentZoneInfo) renderCapacity(currentZoneInfo.zoneRecord, currentZoneInfo.inTransitArea);
 });
 
-function renderSetbacks(zoneRecord){
+function renderSetbacks(zoneRecord, inTransitArea, lotSqFt, lotFrontage){
   const el = document.getElementById('setbackDetail');
   el.innerHTML = '';
   if(!zoneRecord){
@@ -864,19 +942,22 @@ function renderSetbacks(zoneRecord){
   }
   if(!isNRZone(zoneRecord)){
     const zc = zoneRecord.ZONING || zoneRecord.BASE_ZONE || zoneRecord.ZONING_DESC || zoneRecord.CLASS_DESC || 'unclassified';
-    el.innerHTML = '<span class="empty-note">Zoned ' + zc + ' — outside Neighborhood Residential, so the SMC 23.44.014 setback table (unit-count-dependent front/rear yards) doesn’t apply here; this zone has its own setback standards. Confirm with SDCI.</span>';
+    el.innerHTML = '<span class="empty-note">Zoned ' + zc + ' — outside Neighborhood Residential, so the SMC 23.44.090 setback table (unit-count-dependent front/rear yards) doesn’t apply here; this zone has its own setback standards. Confirm with SDCI.</span>';
     return;
   }
   const abutsAlley = document.getElementById('alleyToggle').checked;
-  const oneTwo = setbacksForUnitCount(1, abutsAlley);
-  const threePlus = setbacksForUnitCount(3, abutsAlley);
+  const oneTwo = setbacksForUnitCount(1, abutsAlley, inTransitArea, lotSqFt);
+  const threePlus = setbacksForUnitCount(3, abutsAlley, inTransitArea, lotSqFt);
+  const fmtRear = (s) => abutsAlley ? 'No rear yard required (abuts alley)' : s.rear + ' ft';
+  const fmtSide = (s) => s.sideAvg === s.sideMin ? s.sideAvg + ' ft' : s.sideAvg + ' ft average (3 ft minimum)';
   const wrap = document.createElement('div');
   [
     ['Front — 1 or 2 units', oneTwo.front + ' ft'],
     ['Front — 3+ units', threePlus.front + ' ft'],
-    ['Side (each side) — any unit count', oneTwo.side + ' ft'],
-    ['Rear — 1 or 2 units', abutsAlley ? 'No rear yard required (abuts alley)' : oneTwo.rear + ' ft'],
-    ['Rear — 3+ units', abutsAlley ? 'No rear yard required (abuts alley)' : threePlus.rear + ' ft'],
+    ['Side (each side) — 1 or 2 units', fmtSide(oneTwo)],
+    ['Side (each side) — 3+ units', fmtSide(threePlus)],
+    ['Rear — 1 or 2 units', fmtRear(oneTwo)],
+    ['Rear — 3+ units', fmtRear(threePlus)],
   ].forEach(([k,v]) => {
     const row = document.createElement('div'); row.className = 'kv';
     row.innerHTML = '<span class="k">' + k + '</span><span class="v">' + v + '</span>';
@@ -885,12 +966,34 @@ function renderSetbacks(zoneRecord){
   el.appendChild(wrap);
   const note = document.createElement('div');
   note.className = 'empty-note'; note.style.marginTop = '10px';
-  note.textContent = 'Per SMC 23.44.014, Table A, as amended for HB 1110 middle housing (effective June 30, 2025): front and rear setbacks shrink from 15 ft to 10 ft once a lot has 3+ dwelling units; side yard stays a flat 5 ft regardless of unit count. These are minimum required setbacks, not a guaranteed buildable envelope — corner lots (which have a second front-like setback along the side street), environmentally critical areas, and design review can all add further restrictions beyond this table. Confirm the exact buildable envelope with SDCI before finalizing a site plan.';
+  note.textContent = 'Per SMC 23.44.090 (renumbered from 23.44.014 as part of Council Bill 120993’s reorganization of this chapter, effective mid-January 2026): front and rear setbacks shrink from 15 ft to 10 ft once a lot has 3+ dwelling units. Side yard changed from a flat 5 ft to “5 ft average, 3 ft minimum” — and on lots under 5,000 sq ft inside a Frequent Transit Service Area (the same transit flag used by the unit-capacity card above), side drops to a flat 3 ft and rear drops to 5 ft for “other structures.”' + (oneTwo.smallTransitLot || threePlus.smallTransitLot ? ' This lot qualifies for that small-lot/transit carve-out.' : '') + ' Accessory dwelling units have their own separate setback (5 ft, or 0 ft abutting an alley) not shown in this table. These are minimum required setbacks, not a guaranteed buildable envelope, and this specific carve-out’s wording is ambiguous as to whether it covers principal structures or only accessory ones — confirm the exact buildable envelope with SDCI before finalizing a site plan.';
   el.appendChild(note);
+
+  const autoDetected = lotFrontage && (lotFrontage.result === 'corner' || lotFrontage.result === 'through');
+  if(lotFrontage && lotFrontage.result !== 'unknown'){
+    const detectNote = document.createElement('div');
+    detectNote.className = 'empty-note'; detectNote.style.marginTop = '10px';
+    detectNote.textContent = autoDetected
+      ? 'Auto-detected from nearby street geometry: this lot appears to front more than one street (' + lotFrontage.clusters + ' distinct frontage directions found within 40 ft) — the corner-lot toggle below has been checked automatically. This is a geometric estimate, the same way ADUniverse’s own corner-lot flag is explicitly labeled an estimate; flip the toggle off below if this doesn’t match your lot.'
+      : 'Auto-detected from nearby street geometry: this lot appears to front only one street — the corner-lot toggle below is left unchecked. Flip it on yourself if you know otherwise (e.g. a flag lot or an unusual frontage this geometry check missed).';
+    el.appendChild(detectNote);
+  }
+
+  if(document.getElementById('cornerLotToggle').checked){
+    const cornerNote = document.createElement('div');
+    cornerNote.className = 'empty-note'; cornerNote.style.marginTop = '8px';
+    cornerNote.innerHTML = '<strong>Corner lot:</strong> Based on its street frontages, this property appears to be a corner lot (or possibly a through-lot). This means your house and your ADU could each orient towards a different street with a more independent entry — a real privacy advantage, since neither unit has to share a single street-facing entrance with the other.'
+      + ' Setback-wise, Seattle’s current SMC 23.44.090 table does not set a different number for corner lots — the same front/side/rear figures above still apply. What a corner lot does need sorted out separately: which of your two street-facing lot lines SDCI treats as the official front lot line (everything above measures from that line), and corner-specific driveway/curb-cut placement rules (SMC 23.44.016.F.2 covers garage entrance placement on corner lots). Confirm both with SDCI before finalizing a site plan.';
+    el.appendChild(cornerNote);
+  }
 }
 
 document.getElementById('alleyToggle').addEventListener('change', () => {
-  if(currentZoneInfo) renderSetbacks(currentZoneInfo.zoneRecord);
+  if(currentZoneInfo) renderSetbacks(currentZoneInfo.zoneRecord, currentZoneInfo.inTransitArea, currentZoneInfo.lotSqFt, currentZoneInfo.lotFrontage);
+});
+
+document.getElementById('cornerLotToggle').addEventListener('change', () => {
+  if(currentZoneInfo) renderSetbacks(currentZoneInfo.zoneRecord, currentZoneInfo.inTransitArea, currentZoneInfo.lotSqFt, currentZoneInfo.lotFrontage);
 });
 
 document.getElementById('copyAddrBtn').addEventListener('click', () => {
@@ -1139,6 +1242,20 @@ async function runSearch(){
       logStep('Parcel lookup failed (' + e.message + ') — dimensions & footprint unavailable.', 'fail');
     }
 
+    // Corner-lot / through-lot detection — best-effort, from street geometry
+    // near the parcel. See detectLotFrontage() above for the methodology and
+    // its limits (this is an estimate, same as ADUniverse's own corner-lot
+    // flag is explicitly labeled as an estimate in their methodology).
+    let lotFrontage = {result:'unknown', clusters:0};
+    try{
+      logStep('Checking nearby street geometry for corner/through-lot signal…');
+      const stj = await queryNearParcel(ENDPOINTS.streets, parcelRingLatLngs, lon, lat, 40, 'OBJECTID', 60);
+      lotFrontage = detectLotFrontage(stj.features, getWkid(stj));
+      logStep('Street-frontage check: ' + lotFrontage.result + ' (' + lotFrontage.clusters + ' distinct frontage direction' + (lotFrontage.clusters === 1 ? '' : 's') + ' found).', 'done');
+    } catch(e){
+      logStep('Street-frontage check failed (' + e.message + ') — corner-lot toggle below defaults to manual only.', 'fail');
+    }
+
     // Existing building footprints (joined by parcel PIN, 2023 aerial-derived)
     let bldgFootprintSqFt = null;
     if(parcelAttrs && parcelAttrs.PIN){
@@ -1283,9 +1400,13 @@ async function runSearch(){
       logStep('No parcel PIN available — can’t check the transit list; verify on SDCI’s map.', 'fail');
     }
 
-    currentZoneInfo = {zoneRecord, inTransitArea, transitUnknown};
+    currentZoneInfo = {zoneRecord, inTransitArea, transitUnknown, lotSqFt, lotFrontage};
     renderCapacity(zoneRecord, inTransitArea);
-    renderSetbacks(zoneRecord);
+    // Reset to the auto-detected value on every fresh search (not just when
+    // it's true) — otherwise a corner lot found in a previous search on this
+    // page would stay checked for the next, unrelated address.
+    document.getElementById('cornerLotToggle').checked = (lotFrontage.result === 'corner' || lotFrontage.result === 'through');
+    renderSetbacks(zoneRecord, inTransitArea, lotSqFt, lotFrontage);
 
     const pd = document.getElementById('parcelDetail');
     if(zoneRecord){
