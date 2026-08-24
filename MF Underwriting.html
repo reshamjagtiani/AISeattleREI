@@ -1,0 +1,1319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Underwrite — AI Site Visit | AI Seattle REI</title>
+<style>
+  :root {
+    color-scheme: light;
+    --surface-0: #ffffff;
+    --surface-1: #fcfcfb;
+    --surface-2: #f3f2ef;
+    --border: #e2e0da;
+    --text-primary: #0b0b0b;
+    --text-secondary: #52514e;
+    --text-muted: #83817a;
+    --series-1: #2a78d6; /* blue   — cash / primary */
+    --series-2: #eb6834; /* orange — cumulative / secondary */
+    --series-3: #1baf7a; /* aqua   — after-tax / tertiary */
+    --good: #0ca30c;
+    --critical: #d03b3b;
+    --accent-soft: #eaf1fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      color-scheme: dark;
+      --surface-0: #141413;
+      --surface-1: #1a1a19;
+      --surface-2: #242422;
+      --border: #35342f;
+      --text-primary: #ffffff;
+      --text-secondary: #c3c2b7;
+      --text-muted: #8f8d84;
+      --series-1: #3987e5;
+      --series-2: #d95926;
+      --series-3: #199e70;
+      --good: #2ecc2e;
+      --critical: #e66767;
+      --accent-soft: #1c2733;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+    background: var(--surface-2);
+    color: var(--text-primary);
+    line-height: 1.45;
+  }
+  header {
+    background: var(--surface-0);
+    border-bottom: 1px solid var(--border);
+    padding: 20px 24px;
+  }
+  header h1 { margin: 0 0 4px; font-size: 22px; }
+  header p { margin: 0; color: var(--text-secondary); font-size: 14px; max-width: 900px; }
+  header .breadcrumb { display: block; margin-bottom: 8px; font-size: 12.5px; color: var(--text-secondary); text-decoration: none; }
+  header .breadcrumb:hover { color: var(--series-1); }
+  .layout {
+    display: grid;
+    grid-template-columns: 380px 1fr;
+    gap: 16px;
+    padding: 16px;
+    align-items: start;
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    .input-panel { position: static; max-height: none; overflow-y: visible; }
+  }
+  .panel {
+    background: var(--surface-0);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .panel h2 { font-size: 14px; margin: 0 0 10px; text-transform: uppercase; letter-spacing: .03em; color: var(--text-secondary); }
+  .input-panel { position: sticky; top: 16px; align-self: start; max-height: calc(100vh - 32px); overflow-y: auto; padding-right: 4px; }
+  .input-panel::-webkit-scrollbar { width: 8px; }
+  .input-panel::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
+  details.section { border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: var(--surface-0); overflow: hidden; }
+  details.section > summary {
+    cursor: pointer; padding: 10px 14px; font-weight: 600; font-size: 13.5px;
+    background: var(--surface-1); list-style: none; display: flex; justify-content: space-between; align-items: center;
+  }
+  details.section > summary::-webkit-details-marker { display: none; }
+  details.section > summary::after { content: '+'; font-weight: 400; color: var(--text-muted); }
+  details.section[open] > summary::after { content: '–'; }
+  details.section > .section-body { padding: 12px 14px; }
+  .field { margin-bottom: 10px; }
+  .field label { display: block; font-size: 12px; color: var(--text-secondary); margin-bottom: 3px; }
+  .field input[type=number], .field input[type=text], .field select {
+    width: 100%; padding: 6px 8px; border: 1px solid var(--border); border-radius: 6px;
+    background: var(--surface-1); color: var(--text-primary); font-size: 13px;
+  }
+  .field-row { display: flex; gap: 8px; }
+  .field-row .field { flex: 1; }
+  .hint { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+  .mode-toggle { display: flex; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; margin-bottom: 10px; }
+  .mode-toggle button {
+    flex: 1; padding: 8px; border: none; background: var(--surface-1); color: var(--text-secondary);
+    cursor: pointer; font-size: 12.5px; font-weight: 600;
+  }
+  .mode-toggle button.active { background: var(--series-1); color: #fff; }
+  .rent-table { width: 100%; border-collapse: collapse; margin-bottom: 8px; }
+  .rent-table th { font-size: 11px; color: var(--text-muted); text-align: left; font-weight: 500; padding: 2px 4px; }
+  .rent-table td { padding: 2px 4px; }
+  .rent-table input { width: 100%; padding: 5px 6px; border: 1px solid var(--border); border-radius: 5px; background: var(--surface-1); color: var(--text-primary); font-size: 12.5px; }
+  .row-btn { background: none; border: 1px solid var(--border); border-radius: 5px; color: var(--critical); cursor: pointer; font-size: 13px; width: 26px; height: 26px; }
+  .add-row-btn { font-size: 12px; padding: 6px 10px; border: 1px dashed var(--border); border-radius: 6px; background: none; color: var(--text-secondary); cursor: pointer; }
+  .cards {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 10px; margin-bottom: 12px;
+  }
+  .card { background: var(--surface-0); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+  .card .label { font-size: 11.5px; color: var(--text-secondary); margin-bottom: 4px; }
+  .card .value { font-size: 20px; font-weight: 700; }
+  .card .sub { font-size: 11px; color: var(--text-muted); margin-top: 3px; }
+  .card.highlight { border-color: var(--series-1); background: var(--accent-soft); }
+  table.data-table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  table.data-table th, table.data-table td { padding: 6px 8px; text-align: right; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  table.data-table th:first-child, table.data-table td:first-child { text-align: left; }
+  table.data-table thead th { color: var(--text-secondary); font-weight: 600; background: var(--surface-1); position: sticky; top: 0; }
+  table.data-table tr.section-row td { background: var(--surface-1); font-weight: 700; text-transform: uppercase; font-size: 11px; letter-spacing: .03em; color: var(--text-secondary); text-align: left; }
+  table.data-table tr.total-row td { font-weight: 700; border-top: 2px solid var(--text-primary); background: var(--accent-soft); }
+  #dealSummaryTable td:not(:first-child), #dealSummaryTable th:not(:first-child) { text-align: right; }
+  table.data-table tbody tr:last-child td { font-weight: 700; }
+  .table-scroll { overflow-x: auto; }
+  .neg { color: var(--critical); }
+  .chart-wrap { margin-top: 8px; }
+  .legend { display: flex; gap: 16px; font-size: 12px; color: var(--text-secondary); margin-top: 6px; flex-wrap: wrap; }
+  .legend .swatch { display: inline-block; width: 10px; height: 10px; border-radius: 2px; margin-right: 5px; vertical-align: middle; }
+  .note { font-size: 11.5px; color: var(--text-muted); margin-top: 8px; line-height: 1.5; }
+  .warn-banner { background: #fbe9e7; border: 1px solid var(--critical); color: var(--critical); border-radius: 8px; padding: 8px 12px; font-size: 12.5px; margin-bottom: 10px; }
+  @supports (background: color-mix(in srgb, red 10%, transparent)) {
+    .warn-banner { background: color-mix(in srgb, var(--critical) 12%, transparent); }
+  }
+  .insight-list { display: flex; flex-direction: column; gap: 8px; }
+  .insight-item { display: flex; align-items: flex-start; gap: 10px; padding: 10px 12px; border-radius: 8px; background: var(--surface-1); border: 1px solid var(--border); border-left: 4px solid var(--text-muted); }
+  .insight-item .insight-badge {
+    flex: 0 0 auto; font-size: 10px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase;
+    padding: 3px 7px; border-radius: 5px; color: #fff; background: var(--text-muted); margin-top: 1px;
+  }
+  .insight-item.tier-strong { border-left-color: var(--good); }
+  .insight-item.tier-strong .insight-badge { background: var(--good); }
+  .insight-item.tier-watch { border-left-color: var(--series-2); }
+  .insight-item.tier-watch .insight-badge { background: var(--series-2); }
+  .insight-item.tier-risk { border-left-color: var(--critical); }
+  .insight-item.tier-risk .insight-badge { background: var(--critical); }
+  .insight-item.tier-info { border-left-color: var(--series-1); }
+  .insight-item.tier-info .insight-badge { background: var(--series-1); }
+  .insight-item .insight-body strong { display: block; font-size: 12.5px; margin-bottom: 2px; }
+  .insight-item .insight-body span { font-size: 12px; color: var(--text-secondary); line-height: 1.45; }
+  .tooltip { position: absolute; pointer-events: none; background: var(--text-primary); color: var(--surface-0); font-size: 11px; padding: 4px 8px; border-radius: 5px; opacity: 0; transition: opacity .1s; white-space: nowrap; z-index: 10; }
+  footer { text-align: center; padding: 24px; color: var(--text-muted); font-size: 11.5px; }
+  a { color: var(--series-1); }
+</style>
+</head>
+<body>
+
+<header>
+  <a class="breadcrumb" href="./">← AI Site Visit</a>
+  <h1>Multifamily Underwriting Tool</h1>
+  <p>Model an acquisition with either a standard permanent loan or a hard-money-to-refinance (BRRRR) structure — enter your own deal's numbers below to see IRR, equity multiple, cash flow, and an exit cap-rate sensitivity range for Seattle multifamily (typically 4.0%–8.0%). This tool is for illustrative underwriting only, not tax or investment advice.</p>
+</header>
+
+<div class="layout">
+  <!-- ============ INPUT PANEL ============ -->
+  <div class="input-panel">
+
+    <details class="section" open>
+      <summary>Property &amp; Acquisition</summary>
+      <div class="section-body">
+        <div class="field">
+          <label for="propertyName">Property / deal name</label>
+          <input type="text" id="propertyName" value="Sample Seattle 6-Unit">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="purchasePrice">Purchase price</label>
+            <input type="number" id="purchasePrice" value="1685000" step="1000">
+          </div>
+          <div class="field">
+            <label for="closingCosts">Closing costs</label>
+            <input type="number" id="closingCosts" value="15000" step="500">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="downPaymentPct">Down payment %</label>
+            <input type="number" id="downPaymentPct" value="25" step="1">
+          </div>
+          <div class="field">
+            <label for="renoBudget">Renovation budget</label>
+            <input type="number" id="renoBudget" value="220000" step="1000">
+          </div>
+        </div>
+        <div class="field">
+          <label><input type="checkbox" id="financeRenoWithDebt" checked> Finance renovation with debt (adds to the loan below, rather than cash equity)</label>
+        </div>
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>Financing Structure</summary>
+      <div class="section-body">
+        <div class="mode-toggle">
+          <button id="modeStandardBtn" class="active" type="button">Standard Loan</button>
+          <button id="modeBrrrrBtn" type="button">Hard Money → Refinance</button>
+        </div>
+
+        <div id="standardFields">
+          <div class="field-row">
+            <div class="field">
+              <label for="stdRate">Interest rate (%)</label>
+              <input type="number" id="stdRate" value="6.5" step="0.05">
+            </div>
+            <div class="field">
+              <label for="stdAmort">Amortization (yrs)</label>
+              <input type="number" id="stdAmort" value="30" step="1">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="stdTerm">Loan term (fixed period)</label>
+              <select id="stdTerm">
+                <option value="3">3 years</option>
+                <option value="5" selected>5 years</option>
+                <option value="7">7 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="stdIo">Interest-only period (yrs)</label>
+              <input type="number" id="stdIo" value="0" step="1">
+            </div>
+          </div>
+          <div class="hint">If "years held" below exceeds the loan term, you'll need to refinance or extend at maturity — this tool doesn't model a second refinance automatically.</div>
+        </div>
+
+        <div id="brrrrFields" style="display:none;">
+          <div class="field-row">
+            <div class="field">
+              <label for="hmRate">Hard-money rate (%, interest-only)</label>
+              <input type="number" id="hmRate" value="10.25" step="0.05">
+            </div>
+            <div class="field">
+              <label for="refiYear">Refinance at start of year</label>
+              <input type="number" id="refiYear" value="2" step="1" min="1">
+            </div>
+          </div>
+          <div class="hint">Loan sizing at refinance uses the lesser of an LTV constraint and a DSCR constraint, same as a real lender underwriting a cash-out refi.</div>
+          <div class="field-row">
+            <div class="field">
+              <label for="refiRate">Refinance rate (%)</label>
+              <input type="number" id="refiRate" value="6.25" step="0.05">
+            </div>
+            <div class="field">
+              <label for="refiAmort">Refi amortization (yrs)</label>
+              <input type="number" id="refiAmort" value="25" step="1">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="refiTerm">Refi loan term (fixed period)</label>
+              <select id="refiTerm">
+                <option value="3">3 years</option>
+                <option value="5" selected>5 years</option>
+                <option value="7">7 years</option>
+                <option value="10">10 years</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="refiIo">Refi interest-only period (yrs)</label>
+              <input type="number" id="refiIo" value="0" step="1">
+            </div>
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="refiCapRate">Refi appraisal cap rate (%)</label>
+              <input type="number" id="refiCapRate" value="5.25" step="0.05">
+            </div>
+            <div class="field">
+              <label for="refiLtv">Max loan-to-value (%)</label>
+              <input type="number" id="refiLtv" value="75" step="1">
+            </div>
+          </div>
+          <div class="field">
+            <label for="refiMinDscr">Lender's minimum DSCR</label>
+            <input type="number" id="refiMinDscr" value="1.25" step="0.05">
+          </div>
+        </div>
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>Rent Roll &amp; Revenue</summary>
+      <div class="section-body">
+        <table class="rent-table" id="rentTable">
+          <thead><tr><th>Label</th><th>Qty</th><th>Rent/mo</th><th></th></tr></thead>
+          <tbody id="rentTableBody"></tbody>
+        </table>
+        <button class="add-row-btn" id="addRentRowBtn" type="button">+ Add unit type</button>
+
+        <div class="field" style="margin-top:10px;">
+          <label for="ancillaryMonthly">Ancillary income / month (parking, laundry, etc.)</label>
+          <input type="number" id="ancillaryMonthly" value="600" step="50">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="vacancyY1">Year-1 vacancy / lease-up (%)</label>
+            <input type="number" id="vacancyY1" value="8" step="1">
+          </div>
+          <div class="field">
+            <label for="vacancyStable">Stabilized vacancy, Yr 2+ (%)</label>
+            <input type="number" id="vacancyStable" value="5" step="1">
+          </div>
+        </div>
+        <div class="field">
+          <label for="rentGrowth">Annual rent &amp; ancillary growth (%)</label>
+          <input type="number" id="rentGrowth" value="3" step="0.5">
+        </div>
+      </div>
+    </details>
+
+    <details class="section">
+      <summary>Operating Expenses (Year-1 $)</summary>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label for="opexInsurance">Insurance</label>
+            <input type="number" id="opexInsurance" value="7000" step="100">
+          </div>
+          <div class="field">
+            <label for="opexTax">Property tax</label>
+            <input type="number" id="opexTax" value="15500" step="100">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="opexMaint">Maintenance</label>
+            <input type="number" id="opexMaint" value="4000" step="100">
+          </div>
+          <div class="field">
+            <label for="opexUtil">Utilities</label>
+            <input type="number" id="opexUtil" value="0" step="100">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="opexOther">Other</label>
+            <input type="number" id="opexOther" value="0" step="100">
+          </div>
+          <div class="field">
+            <label for="mgmtFeePct">Mgmt fee (% of EGI)</label>
+            <input type="number" id="mgmtFeePct" value="9.4" step="0.5">
+          </div>
+        </div>
+        <div class="field">
+          <label for="opexGrowth">Opex annual growth (%)</label>
+          <input type="number" id="opexGrowth" value="3" step="0.5">
+        </div>
+      </div>
+    </details>
+
+    <details class="section" open>
+      <summary>Exit &amp; Tax Assumptions</summary>
+      <div class="section-body">
+        <div class="field-row">
+          <div class="field">
+            <label for="yearsHeld">Years held</label>
+            <input type="number" id="yearsHeld" value="5" step="1" min="1" max="15">
+          </div>
+          <div class="field">
+            <label for="exitCapRate">Exit cap rate (%)</label>
+            <input type="number" id="exitCapRate" value="5.0" step="0.25">
+          </div>
+        </div>
+        <div class="hint">Seattle multifamily exit cap rates are typically 4.0%–8.0% — see the sensitivity table for the full range.</div>
+        <div class="field">
+          <label for="sellingCostsPct">Selling / disposition costs (%)</label>
+          <input type="number" id="sellingCostsPct" value="5" step="0.5">
+        </div>
+        <div class="field">
+          <label for="taxRate">Investor's marginal tax rate (%)</label>
+          <input type="number" id="taxRate" value="37" step="1">
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="landPct">Land value (% of purchase, not depreciable)</label>
+            <input type="number" id="landPct" value="25" step="1">
+          </div>
+          <div class="field">
+            <label for="deprLife">Depreciation life</label>
+            <select id="deprLife">
+              <option value="27.5" selected>27.5-yr (residential)</option>
+              <option value="39">39-yr (commercial)</option>
+            </select>
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="costSegPct">Cost-seg reallocation to 5/7/15-yr (%)</label>
+            <input type="number" id="costSegPct" value="20" step="1">
+          </div>
+          <div class="field">
+            <label for="bonusDepRate">Bonus depreciation rate (%)</label>
+            <input type="number" id="bonusDepRate" value="100" step="1">
+          </div>
+        </div>
+        <div class="field-row">
+          <div class="field">
+            <label for="renoBonusPct">Reno budget treated as bonus-eligible (%)</label>
+            <input type="number" id="renoBonusPct" value="40" step="5">
+          </div>
+          <div class="field">
+            <label for="recaptureRate">Depreciation recapture tax rate (%)</label>
+            <input type="number" id="recaptureRate" value="25" step="1">
+          </div>
+        </div>
+        <div class="hint">Depreciation figures are estimates — a cost segregation study and your CPA should confirm actual numbers.</div>
+      </div>
+    </details>
+  </div>
+
+  <!-- ============ OUTPUT DASHBOARD ============ -->
+  <div class="output-panel">
+
+    <div id="warnBanner" class="warn-banner" style="display:none;"></div>
+
+    <div class="panel">
+      <h2>Deal Summary</h2>
+      <div class="note" style="margin-top:-4px;margin-bottom:8px;">One-page snapshot — Year 1 (lease-up) vs. Year 2 (stabilized). See Return Summary below for IRR, equity multiple, and the full hold-period build.</div>
+      <div class="table-scroll"><table class="data-table" id="dealSummaryTable"></table></div>
+    </div>
+
+    <div class="panel">
+      <h2>Return Summary</h2>
+      <div class="cards" id="statCards"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Summary Insights</h2>
+      <div class="note" style="margin-top:-4px;margin-bottom:8px;">Auto-generated read on this deal's numbers, based on the assumptions entered on the left — a starting point for your own judgment, not a recommendation.</div>
+      <div class="insight-list" id="insightsList"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Annual Cash Flow &amp; Return Build</h2>
+      <div class="table-scroll"><table class="data-table" id="cashFlowTable"></table></div>
+      <div class="chart-wrap"><div id="cashFlowChart"></div></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--series-1)"></span>Annual free cash flow</span>
+        <span><span class="swatch" style="background:var(--series-2)"></span>Cumulative cash flow</span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Exit Cap-Rate Sensitivity (Seattle multifamily, typically 4.0%–8.0%)</h2>
+      <div class="table-scroll"><table class="data-table" id="sensitivityTable"></table></div>
+      <div class="chart-wrap"><div id="sensitivityChart"></div></div>
+      <div class="legend">
+        <span><span class="swatch" style="background:var(--series-1)"></span>IRR — cash only</span>
+        <span><span class="swatch" style="background:var(--series-3)"></span>IRR — after-tax</span>
+      </div>
+      <div class="note" id="refiNote"></div>
+    </div>
+
+    <div class="panel">
+      <h2>Methodology Notes</h2>
+      <div class="note">
+        <strong>Levered IRR — cash only</strong> uses actual cash received: free cash flow after debt service each year, plus net sale proceeds (sale price − selling costs − loan payoff) in the exit year.<br>
+        <strong>Levered IRR — after-tax</strong> adds the tax savings from depreciation each year (deduction × marginal tax rate) and subtracts an estimated depreciation-recapture tax in the exit year (accumulated depreciation × recapture rate) — this is a simplification; recapture rules vary by asset type and your CPA should confirm the actual treatment.<br>
+        <strong>Unlevered IRR</strong> treats the deal as all-cash (no financing) for comparison — it isolates the return the real estate itself produces, before leverage.<br>
+        <strong>Equity multiple</strong> = total cash distributed (including sale proceeds) ÷ equity invested.<br>
+        This tool is for illustrative underwriting only and is not tax, legal, or investment advice. All investments are subject to market risk — perform your own due diligence.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<footer>
+  Built for <a href="https://reshamjagtiani.github.io/AISeattleREI/" target="_blank" rel="noopener">AI Seattle REI</a> — a reusable multifamily underwriting tool. Not investment, tax, or legal advice.
+</footer>
+
+<script>
+/* ============================================================
+   CALCULATION ENGINE (pure functions, no DOM)
+   ============================================================ */
+function pmt(rate, nper, pv) {
+  if (rate === 0) return pv / nper;
+  return (pv * rate) / (1 - Math.pow(1 + rate, -nper));
+}
+
+function amortizeAnnual(loanAmount, annualRate, amortYears, years, ioYears) {
+  ioYears = ioYears || 0;
+  const monthlyRate = annualRate / 12;
+  const amortMonths = Math.max(amortYears, 1) * 12;
+  const ioMonths = Math.round(ioYears * 12);
+  let balance = loanAmount;
+  const fullyAmortizingPayment = pmt(monthlyRate, amortMonths, loanAmount);
+  const interestByYear = [], principalByYear = [], endBalanceByYear = [];
+  let monthIdx = 0;
+  for (let y = 0; y < years; y++) {
+    let yearInterest = 0, yearPrincipal = 0;
+    for (let m = 0; m < 12; m++) {
+      const interest = balance * monthlyRate;
+      let principal;
+      if (monthIdx < ioMonths) { principal = 0; }
+      else {
+        principal = fullyAmortizingPayment - interest;
+        if (principal > balance) principal = balance;
+      }
+      balance = Math.max(balance - principal, 0);
+      yearInterest += interest;
+      yearPrincipal += principal;
+      monthIdx++;
+    }
+    interestByYear.push(yearInterest);
+    principalByYear.push(yearPrincipal);
+    endBalanceByYear.push(balance);
+  }
+  return { interestByYear, principalByYear, endBalanceByYear, monthlyPayment: fullyAmortizingPayment };
+}
+
+function npv(rate, cashflows) {
+  return cashflows.reduce((acc, cf, t) => acc + cf / Math.pow(1 + rate, t), 0);
+}
+
+function irr(cashflows, guess) {
+  guess = guess === undefined ? 0.12 : guess;
+  let rate = guess, converged = false;
+  for (let i = 0; i < 100; i++) {
+    const h = 1e-6;
+    const f = npv(rate, cashflows);
+    const fPrime = (npv(rate + h, cashflows) - npv(rate - h, cashflows)) / (2 * h);
+    if (Math.abs(fPrime) < 1e-12) break;
+    const newRate = rate - f / fPrime;
+    if (!isFinite(newRate)) break;
+    if (Math.abs(newRate - rate) < 1e-9) { rate = newRate; converged = true; break; }
+    rate = newRate;
+  }
+  if (converged && isFinite(rate) && Math.abs(npv(rate, cashflows)) < 1e-2) return rate;
+  for (let r = -0.99; r <= 10; r += 0.01) {
+    const a = r, b = r + 0.01;
+    const fa = npv(a, cashflows), fb = npv(b, cashflows);
+    if (fa === 0) return a;
+    if (fa * fb < 0) {
+      let lo = a, hi = b, flo = fa;
+      for (let k = 0; k < 100; k++) {
+        const mid = (lo + hi) / 2;
+        const fmid = npv(mid, cashflows);
+        if (Math.abs(fmid) < 1e-6) return mid;
+        if (flo * fmid < 0) { hi = mid; } else { lo = mid; flo = fmid; }
+      }
+      return (lo + hi) / 2;
+    }
+  }
+  return NaN;
+}
+
+function runModel(inputs) {
+  const yearsHeld = Math.max(1, Math.round(inputs.yearsHeld));
+  const maxYears = yearsHeld;
+
+  const totalMonthlyRent = inputs.rentRoll.reduce((s, u) => s + u.qty * u.monthlyRent, 0);
+  const grossAnnualRentY1 = totalMonthlyRent * 12;
+  const ancillaryAnnualY1 = inputs.ancillaryMonthly * 12;
+
+  const purchasePrice = inputs.purchasePrice;
+  const closingCosts = inputs.closingCosts;
+  const renoBudget = inputs.renoBudget;
+  const downPaymentPct = inputs.downPaymentPct;
+  const downPaymentAmt = purchasePrice * downPaymentPct;
+
+  const noiByYear = [], grossPotentialByYear = [], opexByYear = [], egiByYear = [];
+  const rentByYear = [], ancillaryByYear = [], vacancyCostByYear = [];
+  const insuranceByYear = [], propertyTaxByYear = [], maintenanceByYear = [], utilitiesByYear = [], otherOpexByYear = [], mgmtFeeByYear = [];
+  for (let y = 1; y <= maxYears; y++) {
+    const growth = Math.pow(1 + inputs.rentGrowthPct, y - 1);
+    const rent = grossAnnualRentY1 * growth;
+    const ancillary = ancillaryAnnualY1 * growth;
+    const grossPotential = rent + ancillary;
+    const vacancyPct = y === 1 ? inputs.vacancyYear1Pct : inputs.vacancyStabilizedPct;
+    const vacancyCost = grossPotential * vacancyPct;
+    const egi = grossPotential - vacancyCost;
+    const opexGrowth = Math.pow(1 + inputs.opex.opexGrowthPct, y - 1);
+    const insurance = inputs.opex.insurance * opexGrowth;
+    const propertyTax = inputs.opex.propertyTax * opexGrowth;
+    const maintenance = inputs.opex.maintenance * opexGrowth;
+    const utilities = inputs.opex.utilities * opexGrowth;
+    const other = inputs.opex.other * opexGrowth;
+    const mgmtFee = egi * inputs.opex.mgmtFeePct;
+    const totalOpex = insurance + propertyTax + maintenance + utilities + other + mgmtFee;
+    const noi = egi - totalOpex;
+    rentByYear.push(rent);
+    ancillaryByYear.push(ancillary);
+    vacancyCostByYear.push(vacancyCost);
+    insuranceByYear.push(insurance);
+    propertyTaxByYear.push(propertyTax);
+    maintenanceByYear.push(maintenance);
+    utilitiesByYear.push(utilities);
+    otherOpexByYear.push(other);
+    mgmtFeeByYear.push(mgmtFee);
+    grossPotentialByYear.push(grossPotential);
+    egiByYear.push(egi);
+    opexByYear.push(totalOpex);
+    noiByYear.push(noi);
+  }
+
+  let equityRequired, initialLoanAmount, debtServiceByYear = [], loanBalanceByYear = [];
+  let principalByYear = [], interestByYear = [];
+  let refiEvent = null;
+  const renoDebtAmt = inputs.financeRenoWithDebt ? renoBudget : 0;
+  const renoEquityAmt = inputs.financeRenoWithDebt ? 0 : renoBudget;
+
+  if (inputs.financingMode === 'standard') {
+    initialLoanAmount = purchasePrice * (1 - downPaymentPct) + renoDebtAmt;
+    equityRequired = downPaymentAmt + closingCosts + renoEquityAmt;
+    const s = inputs.standard;
+    const am = amortizeAnnual(initialLoanAmount, s.rate, s.amortYears, maxYears, s.ioYears || 0);
+    for (let y = 0; y < maxYears; y++) {
+      debtServiceByYear.push(am.interestByYear[y] + am.principalByYear[y]);
+      principalByYear.push(am.principalByYear[y]);
+      interestByYear.push(am.interestByYear[y]);
+      loanBalanceByYear.push(am.endBalanceByYear[y]);
+    }
+  } else {
+    const b = inputs.brrrr;
+    const refiYear = Math.max(1, Math.round(b.refiYear));
+    const hardMoneyAmount = purchasePrice * (1 - downPaymentPct) + renoDebtAmt;
+    equityRequired = downPaymentAmt + closingCosts + renoEquityAmt;
+    initialLoanAmount = hardMoneyAmount;
+    let permAm = null;
+
+    for (let y = 1; y <= maxYears; y++) {
+      if (y < refiYear) {
+        const interest = hardMoneyAmount * b.hardMoneyRate;
+        debtServiceByYear.push(interest);
+        principalByYear.push(0);
+        interestByYear.push(interest);
+        loanBalanceByYear.push(hardMoneyAmount);
+      } else if (y === refiYear) {
+        const stabilizedNoi = noiByYear[y - 1];
+        const appraisedValue = stabilizedNoi / b.refiCapRate;
+        const maxLoanLtv = appraisedValue * b.refiLtv;
+        const debtConstant = pmt(b.refiRate / 12, b.refiAmortYears * 12, 1) * 12;
+        const maxLoanDscr = (stabilizedNoi / b.refiMinDscr) / debtConstant;
+        const permLoanAmount = Math.max(0, Math.min(maxLoanLtv, maxLoanDscr));
+        const binding = maxLoanLtv <= maxLoanDscr ? 'LTV' : 'DSCR';
+        const netCashOutOrIn = permLoanAmount - hardMoneyAmount;
+        refiEvent = { year: refiYear, appraisedValue, maxLoanLtv, maxLoanDscr, permLoanAmount, netCashOutOrIn, binding };
+        permAm = amortizeAnnual(permLoanAmount, b.refiRate, b.refiAmortYears, maxYears - refiYear + 1, b.refiIoYears || 0);
+        const idx = y - refiYear;
+        debtServiceByYear.push(permAm.interestByYear[idx] + permAm.principalByYear[idx]);
+        principalByYear.push(permAm.principalByYear[idx]);
+        interestByYear.push(permAm.interestByYear[idx]);
+        loanBalanceByYear.push(permAm.endBalanceByYear[idx]);
+      } else {
+        const idx = y - refiYear;
+        debtServiceByYear.push(permAm.interestByYear[idx] + permAm.principalByYear[idx]);
+        principalByYear.push(permAm.principalByYear[idx]);
+        interestByYear.push(permAm.interestByYear[idx]);
+        loanBalanceByYear.push(permAm.endBalanceByYear[idx]);
+      }
+    }
+  }
+
+  const cleanFcfByYear = noiByYear.map((noi, i) => noi - debtServiceByYear[i]); // operating only, excludes one-time refi cash event
+  const fcfByYear = cleanFcfByYear.slice();
+  if (refiEvent && refiEvent.year <= maxYears) {
+    fcfByYear[refiEvent.year - 1] += refiEvent.netCashOutOrIn;
+  }
+
+  const depreciableBasis = purchasePrice * (1 - inputs.tax.landPct);
+  const costSegBasis = depreciableBasis * inputs.tax.costSegPct;
+  const bonusFromPurchase = costSegBasis * inputs.tax.bonusDepRate;
+  const bonusFromReno = renoBudget * inputs.tax.renoBonusEligiblePct * inputs.tax.bonusDepRate;
+  const totalFirstYearBonus = bonusFromPurchase + bonusFromReno;
+  const regularAnnualDep = (depreciableBasis - costSegBasis) / inputs.tax.depreciationLife;
+  const depByYear = [];
+  for (let y = 1; y <= maxYears; y++) depByYear.push(y === 1 ? totalFirstYearBonus + regularAnnualDep : regularAnnualDep);
+  const taxSavingsByYear = depByYear.map(d => d * inputs.tax.marginalRate);
+  const accumulatedDep = depByYear.reduce((a, b2) => a + b2, 0);
+  const recaptureTax = accumulatedDep * inputs.tax.recaptureRate;
+
+  const totalUses = purchasePrice + closingCosts + renoBudget;
+  const noiAtExit = noiByYear[yearsHeld - 1];
+  const salePrice = noiAtExit / inputs.exitCapRate;
+  const sellingCosts = salePrice * inputs.sellingCostsPct;
+  const loanPayoffAtExit = loanBalanceByYear[yearsHeld - 1];
+  const netSaleProceeds = salePrice - sellingCosts - loanPayoffAtExit;
+
+  const cfCash = [-equityRequired], cfAfterTax = [-equityRequired], cfUnlevered = [-totalUses];
+  for (let y = 1; y <= yearsHeld; y++) {
+    let cash = fcfByYear[y - 1];
+    let afterTax = fcfByYear[y - 1] + taxSavingsByYear[y - 1];
+    let unlevered = noiByYear[y - 1];
+    if (y === yearsHeld) {
+      cash += netSaleProceeds;
+      afterTax += netSaleProceeds - recaptureTax;
+      unlevered += salePrice - sellingCosts;
+    }
+    cfCash.push(cash); cfAfterTax.push(afterTax); cfUnlevered.push(unlevered);
+  }
+
+  const levIrrCash = irr(cfCash);
+  const levIrrAfterTax = irr(cfAfterTax);
+  const unleveredIrr = irr(cfUnlevered);
+  const equityMultiple = cfCash.slice(1).reduce((a, b2) => a + b2, 0) / equityRequired;
+
+  const operatingCfOnly = fcfByYear.slice(0, yearsHeld).map((cf, i) => (refiEvent && i === refiEvent.year - 1) ? cf - refiEvent.netCashOutOrIn : cf);
+  const avgAnnualOperatingCf = operatingCfOnly.reduce((a, b2) => a + b2, 0) / yearsHeld;
+  const avgCoC = avgAnnualOperatingCf / equityRequired;
+  const paybackYears = avgAnnualOperatingCf > 0 ? equityRequired / avgAnnualOperatingCf : null;
+
+  const debtYieldAtExit = noiAtExit / loanPayoffAtExit;
+  const dscrByYear = noiByYear.map((noi, i) => noi / debtServiceByYear[i]);
+  const minDscr = Math.min.apply(null, dscrByYear.slice(0, yearsHeld));
+  const breakEvenOccupancyY1 = (opexByYear[0] + debtServiceByYear[0]) / grossPotentialByYear[0];
+
+  const sensitivity = [];
+  for (let cr = 0.04; cr <= 0.0800001; cr += 0.005) {
+    const sp = noiAtExit / cr;
+    const sc = sp * inputs.sellingCostsPct;
+    const nsp = sp - sc - loanPayoffAtExit;
+    const rowCash = cfCash.slice(0, yearsHeld);
+    const rowAfterTax = cfAfterTax.slice(0, yearsHeld);
+    rowCash[yearsHeld] = fcfByYear[yearsHeld - 1] + nsp;
+    rowAfterTax[yearsHeld] = fcfByYear[yearsHeld - 1] + taxSavingsByYear[yearsHeld - 1] + nsp - recaptureTax;
+    const cashIrr = irr(rowCash);
+    const afterTaxIrr = irr(rowAfterTax);
+    const eqMult = rowCash.slice(1).reduce((a, b2) => a + b2, 0) / equityRequired;
+    sensitivity.push({ capRate: cr, salePrice: sp, sellingCosts: sc, netProceeds: nsp, equityMultiple: eqMult, irrCash: cashIrr, irrAfterTax: afterTaxIrr });
+  }
+
+  return {
+    yearsHeld, equityRequired, initialLoanAmount, totalUses,
+    noiByYear, grossPotentialByYear, egiByYear, opexByYear,
+    debtServiceByYear, loanBalanceByYear, fcfByYear, cleanFcfByYear, dscrByYear,
+    depByYear, taxSavingsByYear, accumulatedDep, recaptureTax,
+    salePrice, sellingCosts, loanPayoffAtExit, netSaleProceeds, noiAtExit,
+    levIrrCash, levIrrAfterTax, unleveredIrr, equityMultiple,
+    avgCoC, paybackYears, debtYieldAtExit, minDscr, breakEvenOccupancyY1,
+    refiEvent, sensitivity, cfCash, cfAfterTax, cfUnlevered,
+    totalFirstYearBonus, regularAnnualDep, depreciableBasis,
+    rentByYear, ancillaryByYear, vacancyCostByYear,
+    insuranceByYear, propertyTaxByYear, maintenanceByYear, utilitiesByYear, otherOpexByYear, mgmtFeeByYear,
+    principalByYear, interestByYear, downPaymentAmt, purchasePrice, closingCosts, renoBudget,
+    renoDebtAmt, renoEquityAmt
+  };
+}
+
+/* ============================================================
+   FORMATTING HELPERS
+   ============================================================ */
+const fmtUSD = n => {
+  if (n === null || n === undefined || !isFinite(n)) return '—';
+  const neg = n < 0;
+  const v = Math.round(Math.abs(n)).toLocaleString('en-US');
+  return neg ? `($${v})` : `$${v}`;
+};
+const fmtPct = (n, d) => {
+  if (n === null || n === undefined || !isFinite(n)) return '—';
+  return (n * 100).toFixed(d === undefined ? 1 : d) + '%';
+};
+const fmtX = n => (n === null || n === undefined || !isFinite(n)) ? '—' : n.toFixed(2) + 'x';
+
+/* ============================================================
+   RENT ROLL TABLE MANAGEMENT
+   ============================================================ */
+let rentRowId = 0;
+function addRentRow(label, qty, rent) {
+  const tbody = document.getElementById('rentTableBody');
+  const id = rentRowId++;
+  const tr = document.createElement('tr');
+  tr.dataset.rowId = id;
+  tr.innerHTML = `
+    <td><input type="text" class="rr-label" value="${label}"></td>
+    <td><input type="number" class="rr-qty" value="${qty}" style="width:50px"></td>
+    <td><input type="number" class="rr-rent" value="${rent}" step="25"></td>
+    <td><button class="row-btn rr-remove" type="button">×</button></td>
+  `;
+  tbody.appendChild(tr);
+  tr.querySelectorAll('input').forEach(inp => inp.addEventListener('input', scheduleRecalc));
+  tr.querySelector('.rr-remove').addEventListener('click', () => { tr.remove(); scheduleRecalc(); });
+}
+
+function getRentRoll() {
+  const rows = document.querySelectorAll('#rentTableBody tr');
+  return Array.from(rows).map(tr => ({
+    label: tr.querySelector('.rr-label').value,
+    qty: parseFloat(tr.querySelector('.rr-qty').value) || 0,
+    monthlyRent: parseFloat(tr.querySelector('.rr-rent').value) || 0
+  }));
+}
+
+/* ============================================================
+   INPUT COLLECTION
+   ============================================================ */
+let financingMode = 'standard';
+
+function num(id) { return parseFloat(document.getElementById(id).value) || 0; }
+function pct(id) { return num(id) / 100; }
+
+function collectInputs() {
+  return {
+    purchasePrice: num('purchasePrice'),
+    closingCosts: num('closingCosts'),
+    downPaymentPct: pct('downPaymentPct'),
+    renoBudget: num('renoBudget'),
+    financeRenoWithDebt: document.getElementById('financeRenoWithDebt').checked,
+    financingMode: financingMode,
+    standard: { rate: pct('stdRate'), amortYears: num('stdAmort'), ioYears: num('stdIo'), term: num('stdTerm') },
+    brrrr: {
+      hardMoneyRate: pct('hmRate'), refiYear: num('refiYear'), refiRate: pct('refiRate'),
+      refiAmortYears: num('refiAmort'), refiIoYears: num('refiIo'), refiTerm: num('refiTerm'),
+      refiCapRate: pct('refiCapRate'), refiLtv: pct('refiLtv'), refiMinDscr: num('refiMinDscr')
+    },
+    rentRoll: getRentRoll(),
+    ancillaryMonthly: num('ancillaryMonthly'),
+    vacancyYear1Pct: pct('vacancyY1'),
+    vacancyStabilizedPct: pct('vacancyStable'),
+    rentGrowthPct: pct('rentGrowth'),
+    opex: {
+      insurance: num('opexInsurance'), propertyTax: num('opexTax'), maintenance: num('opexMaint'),
+      utilities: num('opexUtil'), other: num('opexOther'), mgmtFeePct: pct('mgmtFeePct'), opexGrowthPct: pct('opexGrowth')
+    },
+    yearsHeld: num('yearsHeld'),
+    exitCapRate: pct('exitCapRate'),
+    sellingCostsPct: pct('sellingCostsPct'),
+    tax: {
+      marginalRate: pct('taxRate'), landPct: pct('landPct'),
+      depreciationLife: parseFloat(document.getElementById('deprLife').value),
+      costSegPct: pct('costSegPct'), bonusDepRate: pct('bonusDepRate'),
+      renoBonusEligiblePct: pct('renoBonusPct'), recaptureRate: pct('recaptureRate')
+    }
+  };
+}
+
+/* ============================================================
+   SVG CHART HELPERS
+   ============================================================ */
+function svgEl(tag, attrs) {
+  const el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+  for (const k in attrs) el.setAttribute(k, attrs[k]);
+  return el;
+}
+
+function renderCashFlowChart(results) {
+  const container = document.getElementById('cashFlowChart');
+  container.innerHTML = '';
+  const W = container.clientWidth || 600, H = 220;
+  const padL = 60, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const years = results.fcfByYear.length;
+  let cum = 0;
+  const cumArr = results.fcfByYear.map(v => (cum += v));
+  const allVals = results.fcfByYear.concat(cumArr);
+  const minV = Math.min(0, Math.min.apply(null, allVals));
+  const maxV = Math.max(0, Math.max.apply(null, allVals));
+  const range = (maxV - minV) || 1;
+
+  const svg = svgEl('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` });
+  const y0 = padT + plotH * (1 - (0 - minV) / range);
+  svg.appendChild(svgEl('line', { x1: padL, x2: W - padR, y1: y0, y2: y0, stroke: 'var(--border)', 'stroke-width': 1 }));
+
+  const barW = Math.min(40, plotW / years * 0.5);
+  const groupW = plotW / years;
+
+  for (let i = 0; i < years; i++) {
+    const cx = padL + groupW * (i + 0.5);
+    const barVal = results.fcfByYear[i];
+    const barY = padT + plotH * (1 - (Math.max(barVal, 0) - minV) / range);
+    const barYNeg = padT + plotH * (1 - (0 - minV) / range);
+    const barHeight = Math.abs(padT + plotH * (1 - (barVal - minV) / range) - y0);
+    const rectY = barVal >= 0 ? padT + plotH * (1 - (barVal - minV) / range) : y0;
+    const rect = svgEl('rect', {
+      x: cx - barW / 2, y: rectY, width: barW, height: Math.max(barHeight, 1),
+      fill: 'var(--series-1)', rx: 3
+    });
+    svg.appendChild(rect);
+
+    const label = svgEl('text', { x: cx, y: H - 8, 'text-anchor': 'middle', 'font-size': 11, fill: 'var(--text-muted)' });
+    label.textContent = 'Yr ' + (i + 1);
+    svg.appendChild(label);
+  }
+
+  // cumulative line
+  let pathD = '';
+  for (let i = 0; i < years; i++) {
+    const cx = padL + groupW * (i + 0.5);
+    const cy = padT + plotH * (1 - (cumArr[i] - minV) / range);
+    pathD += (i === 0 ? 'M' : 'L') + cx + ',' + cy + ' ';
+    svg.appendChild(svgEl('circle', { cx, cy, r: 4, fill: 'var(--series-2)' }));
+  }
+  svg.appendChild(svgEl('path', { d: pathD.trim(), fill: 'none', stroke: 'var(--series-2)', 'stroke-width': 2 }));
+
+  // y-axis labels (0 and max/min)
+  [minV, 0, maxV].forEach(v => {
+    const yy = padT + plotH * (1 - (v - minV) / range);
+    const t = svgEl('text', { x: padL - 8, y: yy + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = fmtUSD(v);
+    svg.appendChild(t);
+  });
+
+  container.appendChild(svg);
+}
+
+function renderSensitivityChart(results) {
+  const container = document.getElementById('sensitivityChart');
+  container.innerHTML = '';
+  const W = container.clientWidth || 600, H = 220;
+  const padL = 50, padR = 16, padT = 16, padB = 28;
+  const plotW = W - padL - padR, plotH = H - padT - padB;
+
+  const rows = results.sensitivity.filter(r => isFinite(r.irrCash) && isFinite(r.irrAfterTax));
+  if (!rows.length) { container.innerHTML = '<div class="note">IRR did not converge for this scenario — try adjusting inputs.</div>'; return; }
+  const allVals = rows.map(r => r.irrCash).concat(rows.map(r => r.irrAfterTax));
+  const minV = Math.min.apply(null, allVals.concat([0]));
+  const maxV = Math.max.apply(null, allVals);
+  const range = (maxV - minV) || 1;
+
+  const svg = svgEl('svg', { width: W, height: H, viewBox: `0 0 ${W} ${H}` });
+  const y0 = padT + plotH * (1 - (0 - minV) / range);
+  svg.appendChild(svgEl('line', { x1: padL, x2: W - padR, y1: y0, y2: y0, stroke: 'var(--border)', 'stroke-width': 1 }));
+
+  function xFor(i) { return padL + plotW * (i / (rows.length - 1 || 1)); }
+  function yFor(v) { return padT + plotH * (1 - (v - minV) / range); }
+
+  function drawLine(key, color) {
+    let d = '';
+    rows.forEach((r, i) => {
+      const x = xFor(i), y = yFor(r[key]);
+      d += (i === 0 ? 'M' : 'L') + x + ',' + y + ' ';
+      svg.appendChild(svgEl('circle', { cx: x, cy: y, r: 3.5, fill: color }));
+    });
+    svg.appendChild(svgEl('path', { d: d.trim(), fill: 'none', stroke: color, 'stroke-width': 2 }));
+  }
+  drawLine('irrCash', 'var(--series-1)');
+  drawLine('irrAfterTax', 'var(--series-3)');
+
+  rows.forEach((r, i) => {
+    const t = svgEl('text', { x: xFor(i), y: H - 8, 'text-anchor': 'middle', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = (r.capRate * 100).toFixed(1) + '%';
+    svg.appendChild(t);
+  });
+  [minV, 0, maxV].forEach(v => {
+    const yy = yFor(v);
+    const t = svgEl('text', { x: padL - 6, y: yy + 4, 'text-anchor': 'end', 'font-size': 10, fill: 'var(--text-muted)' });
+    t.textContent = fmtPct(v, 0);
+    svg.appendChild(t);
+  });
+
+  container.appendChild(svg);
+}
+
+/* ============================================================
+   RENDER — stat cards, tables
+   ============================================================ */
+function renderStatCards(r) {
+  const cards = [
+    { label: 'Owner equity required', value: fmtUSD(r.equityRequired) },
+    { label: 'Equity multiple (MOIC)', value: fmtX(r.equityMultiple), hl: true },
+    { label: 'Levered IRR — cash only', value: fmtPct(r.levIrrCash), hl: true },
+    { label: 'Levered IRR — after-tax', value: fmtPct(r.levIrrAfterTax), hl: true },
+    { label: 'Unlevered IRR (all-cash)', value: fmtPct(r.unleveredIrr) },
+    { label: 'Avg. annual cash-on-cash', value: fmtPct(r.avgCoC) },
+    { label: 'Payback period (approx.)', value: !r.paybackYears ? 'N/A' : (r.paybackYears > 30 ? '30+ yrs' : r.paybackYears.toFixed(1) + ' yrs') },
+    { label: 'Minimum DSCR over hold', value: fmtX(r.minDscr) },
+    { label: 'Debt yield at exit', value: fmtPct(r.debtYieldAtExit) },
+    { label: 'Break-even occupancy, Yr 1', value: fmtPct(r.breakEvenOccupancyY1) },
+    { label: 'NOI at exit', value: fmtUSD(r.noiAtExit) },
+    { label: 'Net sale proceeds at exit', value: fmtUSD(r.netSaleProceeds) },
+  ];
+  const html = cards.map(c => `
+    <div class="card${c.hl ? ' highlight' : ''}">
+      <div class="label">${c.label}</div>
+      <div class="value">${c.value}</div>
+    </div>`).join('');
+  document.getElementById('statCards').innerHTML = html;
+}
+
+function renderCashFlowTable(r) {
+  const years = r.noiByYear.length;
+  let head = '<thead><tr><th>Year</th>' + Array.from({ length: years }, (_, i) => `<th>Year ${i + 1}</th>`).join('') + '</tr></thead>';
+  function row(label, arr, fmt) {
+    return `<tr><td>${label}</td>` + arr.map(v => `<td class="${v < 0 ? 'neg' : ''}">${fmt(v)}</td>`).join('') + '</tr>';
+  }
+  let body = '<tbody>';
+  body += row('Gross potential income', r.grossPotentialByYear, fmtUSD);
+  body += row('Effective gross income', r.egiByYear, fmtUSD);
+  body += row('Operating expenses', r.opexByYear.map(v => -v), fmtUSD);
+  body += row('Net operating income (NOI)', r.noiByYear, fmtUSD);
+  body += row('Debt service', r.debtServiceByYear.map(v => -v), fmtUSD);
+  body += row('Free cash flow', r.fcfByYear, fmtUSD);
+  body += row('DSCR', r.dscrByYear, v => fmtX(v));
+  body += row('Depreciation deduction', r.depByYear, fmtUSD);
+  body += row('Tax savings (@ marginal rate)', r.taxSavingsByYear, fmtUSD);
+  body += row('Loan balance, year-end', r.loanBalanceByYear, fmtUSD);
+  body += '</tbody>';
+  document.getElementById('cashFlowTable').innerHTML = head + body;
+}
+
+function renderSensitivityTable(r) {
+  let head = '<thead><tr><th>Exit cap rate</th><th>Sale price</th><th>Selling costs</th><th>Net sale proceeds</th><th>Equity multiple</th><th>IRR — cash</th><th>IRR — after-tax</th></tr></thead>';
+  let body = '<tbody>' + r.sensitivity.map(s => `
+    <tr${Math.abs(s.capRate - (r.__exitCapRate || 0)) < 0.0001 ? ' style="background:var(--accent-soft)"' : ''}>
+      <td>${fmtPct(s.capRate, 1)}</td>
+      <td>${fmtUSD(s.salePrice)}</td>
+      <td>${fmtUSD(s.sellingCosts)}</td>
+      <td class="${s.netProceeds < 0 ? 'neg' : ''}">${fmtUSD(s.netProceeds)}</td>
+      <td>${fmtX(s.equityMultiple)}</td>
+      <td class="${s.irrCash < 0 ? 'neg' : ''}">${fmtPct(s.irrCash)}</td>
+      <td class="${s.irrAfterTax < 0 ? 'neg' : ''}">${fmtPct(s.irrAfterTax)}</td>
+    </tr>`).join('') + '</tbody>';
+  document.getElementById('sensitivityTable').innerHTML = head + body;
+}
+
+function renderDealSummary(inputs, r) {
+  const g = (arr, i) => (arr && i < arr.length) ? arr[i] : undefined;
+  const hasYear2 = r.noiByYear.length >= 2;
+  const purchasePrice = inputs.purchasePrice;
+
+  const rows = [];
+  const section = (title) => rows.push(`<tr class="section-row"><td colspan="3">${title}</td></tr>`);
+  const assumeRow = (label, value) => rows.push(`<tr><td>${label}</td><td colspan="2">${value}</td></tr>`);
+  const yearHeader = () => rows.push(`<tr><td></td><th>Year 1 (Lease-Up)</th><th>${hasYear2 ? 'Year 2 (Stabilized)' : '—'}</th></tr>`);
+  const dataRow = (label, v1, v2, fmt, bold) => {
+    fmt = fmt || fmtUSD;
+    const c1 = fmt(v1), c2 = (v2 === undefined ? '—' : fmt(v2));
+    rows.push(`<tr${bold ? ' class="total-row"' : ''}><td>${label}</td><td class="${typeof v1 === 'number' && v1 < 0 ? 'neg' : ''}">${c1}</td><td class="${typeof v2 === 'number' && v2 < 0 ? 'neg' : ''}">${c2}</td></tr>`);
+  };
+
+  section('Common Assumptions');
+  assumeRow('Down payment', fmtPct(inputs.downPaymentPct));
+  assumeRow('Management fee (% of EGI)', fmtPct(inputs.opex.mgmtFeePct));
+  if (inputs.financingMode === 'standard') {
+    assumeRow('Loan rate', fmtPct(inputs.standard.rate));
+  } else {
+    assumeRow('Hard-money rate (Year 1)', fmtPct(inputs.brrrr.hardMoneyRate));
+    assumeRow('Refinance rate (Year ' + Math.round(inputs.brrrr.refiYear) + '+)', fmtPct(inputs.brrrr.refiRate));
+  }
+  assumeRow('Vacancy — Year 1 lease-up / stabilized', fmtPct(inputs.vacancyYear1Pct, 0) + ' / ' + fmtPct(inputs.vacancyStabilizedPct, 0));
+  assumeRow("Investor's marginal tax rate", fmtPct(inputs.tax.marginalRate, 0));
+  assumeRow('Years held / exit cap rate', Math.round(inputs.yearsHeld) + ' yrs / ' + fmtPct(inputs.exitCapRate));
+  assumeRow('Selling / disposition costs', fmtPct(inputs.sellingCostsPct, 0));
+
+  section('Property & Investor Cost');
+  assumeRow('Purchase price', fmtUSD(purchasePrice));
+  assumeRow('Initial loan amount (Year 1)', fmtUSD(r.initialLoanAmount));
+  assumeRow('Down payment + closing costs', fmtUSD(r.downPaymentAmt + r.closingCosts));
+  assumeRow('Renovation budget ' + (r.renoDebtAmt > 0 ? '(debt-financed — not additional cash equity)' : '(cash-funded)'), fmtUSD(r.renoBudget));
+  rows.push(`<tr class="total-row"><td>TOTAL OWNER EQUITY REQUIRED</td><td colspan="2">${fmtUSD(r.equityRequired)}</td></tr>`);
+
+  section('Revenue');
+  yearHeader();
+  dataRow('Gross rents', g(r.rentByYear, 0), g(r.rentByYear, 1));
+  dataRow('Ancillary revenue (parking, laundry, etc.)', g(r.ancillaryByYear, 0), g(r.ancillaryByYear, 1));
+  dataRow('Total rental income (pre-vacancy)', g(r.grossPotentialByYear, 0), g(r.grossPotentialByYear, 1), fmtUSD, true);
+
+  section('Operating Expenses (yearly)');
+  yearHeader();
+  dataRow('Property tax', -g(r.propertyTaxByYear, 0), hasYear2 ? -g(r.propertyTaxByYear, 1) : undefined);
+  dataRow('Insurance', -g(r.insuranceByYear, 0), hasYear2 ? -g(r.insuranceByYear, 1) : undefined);
+  dataRow('HOA (not modeled — add if applicable)', 0, hasYear2 ? 0 : undefined);
+  dataRow('Utilities', -g(r.utilitiesByYear, 0), hasYear2 ? -g(r.utilitiesByYear, 1) : undefined);
+  dataRow('Maintenance', -g(r.maintenanceByYear, 0), hasYear2 ? -g(r.maintenanceByYear, 1) : undefined);
+  dataRow('Management fee', -g(r.mgmtFeeByYear, 0), hasYear2 ? -g(r.mgmtFeeByYear, 1) : undefined);
+  dataRow('Vacancy cost', -g(r.vacancyCostByYear, 0), hasYear2 ? -g(r.vacancyCostByYear, 1) : undefined);
+  dataRow('NET OPERATING INCOME (NOI)', g(r.noiByYear, 0), g(r.noiByYear, 1), fmtUSD, true);
+  dataRow('Unleveraged cap rate (NOI ÷ purchase price)', g(r.noiByYear, 0) / purchasePrice, hasYear2 ? g(r.noiByYear, 1) / purchasePrice : undefined, v => fmtPct(v), true);
+
+  section('Net Profit');
+  yearHeader();
+  dataRow('Total debt service (interest + principal)', -g(r.debtServiceByYear, 0), hasYear2 ? -g(r.debtServiceByYear, 1) : undefined);
+  dataRow('Net income / Free Cash Flow', g(r.cleanFcfByYear, 0), g(r.cleanFcfByYear, 1), fmtUSD, true);
+  dataRow('Cash-on-Cash Return on Investment', g(r.cleanFcfByYear, 0) / r.equityRequired, hasYear2 ? g(r.cleanFcfByYear, 1) / r.equityRequired : undefined, v => fmtPct(v), true);
+
+  section('Non-Cashflow Benefits');
+  yearHeader();
+  const taxBenefitStraightLine = r.regularAnnualDep * inputs.tax.marginalRate;
+  const bonusTaxBenefit = r.totalFirstYearBonus * inputs.tax.marginalRate;
+  dataRow('Tax benefit — straight-line depreciation (@ marginal rate)', taxBenefitStraightLine, hasYear2 ? taxBenefitStraightLine : undefined);
+  dataRow('Principal repayment', g(r.principalByYear, 0), g(r.principalByYear, 1));
+  dataRow('Tax benefit — first-year bonus depreciation (@ marginal rate)', bonusTaxBenefit, hasYear2 ? 0 : undefined);
+  const cncY1 = (g(r.cleanFcfByYear, 0) + taxBenefitStraightLine + g(r.principalByYear, 0) + bonusTaxBenefit) / r.equityRequired;
+  const cncY2 = hasYear2 ? (g(r.cleanFcfByYear, 1) + taxBenefitStraightLine + g(r.principalByYear, 1)) / r.equityRequired : undefined;
+  dataRow('Cash + Non-cash return on investment', cncY1, cncY2, v => fmtPct(v), true);
+
+  const head = '<thead><tr><th style="text-align:left">Line item</th><th>Year 1</th><th>Year 2</th></tr></thead>';
+  document.getElementById('dealSummaryTable').innerHTML = head + '<tbody>' + rows.join('') + '</tbody>';
+}
+
+function renderWarnings(inputs, r) {
+  const warnings = [];
+  if (inputs.financingMode === 'standard' && inputs.yearsHeld > inputs.standard.term) {
+    warnings.push(`Years held (${inputs.yearsHeld}) exceeds the loan's fixed term (${inputs.standard.term} yrs) — you'd need to refinance or extend at maturity; this isn't modeled automatically.`);
+  }
+  if (inputs.financingMode === 'brrrr' && inputs.brrrr.refiYear > inputs.yearsHeld) {
+    warnings.push(`Refinance year (${inputs.brrrr.refiYear}) is after the hold period ends (${inputs.yearsHeld} yrs) — the deal is modeled as staying on hard-money financing for the entire hold.`);
+  }
+  if (inputs.financingMode === 'brrrr' && r.refiEvent && r.refiEvent.netCashOutOrIn < 0) {
+    warnings.push(`At refinance, the ${r.refiEvent.binding}-constrained loan (${fmtUSD(r.refiEvent.permLoanAmount)}) is less than the hard-money payoff — you'd need to bring ${fmtUSD(-r.refiEvent.netCashOutOrIn)} of additional cash to close the refinance.`);
+  }
+  if (!isFinite(r.levIrrCash)) warnings.push('IRR (cash) did not converge for this scenario — try adjusting inputs (e.g. a less extreme exit cap rate or hold period).');
+  const banner = document.getElementById('warnBanner');
+  if (warnings.length) { banner.style.display = 'block'; banner.innerHTML = warnings.map(w => '⚠ ' + w).join('<br>'); }
+  else { banner.style.display = 'none'; }
+
+  const refiNote = document.getElementById('refiNote');
+  if (inputs.financingMode === 'brrrr' && r.refiEvent) {
+    refiNote.textContent = `Refinance sizing at Year ${r.refiEvent.year}: appraised value ${fmtUSD(r.refiEvent.appraisedValue)}, LTV-max loan ${fmtUSD(r.refiEvent.maxLoanLtv)}, DSCR-max loan ${fmtUSD(r.refiEvent.maxLoanDscr)} — sized loan of ${fmtUSD(r.refiEvent.permLoanAmount)} is constrained by ${r.refiEvent.binding}.`;
+  } else {
+    refiNote.textContent = '';
+  }
+}
+
+/* ============================================================
+   RENDER — summary insights (plain-language read on the results)
+   ============================================================ */
+const TIER_LABEL = { strong: 'Strength', info: 'Note', watch: 'Watch', risk: 'Risk' };
+
+function buildInsights(inputs, r) {
+  const insights = [];
+  if (!r.noiByYear.length || !isFinite(r.equityRequired) || r.equityRequired <= 0) return insights;
+
+  const stableIdx = r.noiByYear.length >= 2 ? 1 : 0;
+  const goingInCapRate = r.noiByYear[stableIdx] / inputs.purchasePrice;
+  const debtRate = inputs.financingMode === 'standard'
+    ? inputs.standard.rate
+    : (r.refiEvent ? inputs.brrrr.refiRate : inputs.brrrr.hardMoneyRate);
+
+  // 1. Leverage — is debt accretive or a drag on returns?
+  if (goingInCapRate > debtRate + 0.0025) {
+    insights.push({ tier: 'strong', title: 'Leverage is working in your favor', text:
+      `Stabilized cap rate (${fmtPct(goingInCapRate)}) sits above your borrowing rate (${fmtPct(debtRate)}) — debt is accretive here, which is a big part of why the levered IRR (${fmtPct(r.levIrrCash)}) beats the unlevered IRR (${fmtPct(r.unleveredIrr)}).` });
+  } else if (goingInCapRate < debtRate - 0.0025) {
+    insights.push({ tier: 'watch', title: 'Negative leverage', text:
+      `Your borrowing rate (${fmtPct(debtRate)}) is higher than the stabilized cap rate (${fmtPct(goingInCapRate)}) — debt is a drag on returns rather than a boost. Notice the unlevered IRR (${fmtPct(r.unleveredIrr)}) is running ahead of the levered cash IRR (${fmtPct(r.levIrrCash)}).` });
+  } else {
+    insights.push({ tier: 'info', title: 'Leverage is roughly neutral', text:
+      `Stabilized cap rate (${fmtPct(goingInCapRate)}) and borrowing rate (${fmtPct(debtRate)}) are close — debt isn't doing much heavy lifting for returns either way.` });
+  }
+
+  // 2. Headline IRR read
+  const irrC = r.levIrrCash;
+  if (!isFinite(irrC)) {
+    insights.push({ tier: 'risk', title: 'IRR did not converge', text:
+      'This scenario’s cash-flow pattern has no clean internal rate of return — double check your inputs, especially the exit cap rate and hold period.' });
+  } else if (irrC < 0) {
+    insights.push({ tier: 'risk', title: 'Projected loss of capital', text:
+      `Levered cash IRR is negative (${fmtPct(irrC)}) — as modeled, this deal returns less cash than was invested. Revisit purchase price, financing, or rent assumptions.` });
+  } else if (irrC < 0.08) {
+    insights.push({ tier: 'watch', title: 'Return is modest for the risk taken', text:
+      `Levered cash IRR of ${fmtPct(irrC)} is on the low side for an illiquid, leveraged multifamily deal — worth comparing against your cost of capital and other opportunities.` });
+  } else if (irrC < 0.15) {
+    insights.push({ tier: 'info', title: 'Return is in a reasonable range', text:
+      `Levered cash IRR of ${fmtPct(irrC)} (${fmtPct(r.levIrrAfterTax)} after-tax) is a solid, if not exceptional, multifamily return — much of it depends on the exit assumptions below.` });
+  } else {
+    insights.push({ tier: 'strong', title: 'Strong projected return', text:
+      `Levered cash IRR of ${fmtPct(irrC)} (${fmtPct(r.levIrrAfterTax)} after-tax) is a strong result — stress-test it against the cap-rate sensitivity table before getting attached to it.` });
+  }
+
+  // 3. Debt coverage
+  if (r.minDscr < 1.0) {
+    insights.push({ tier: 'risk', title: 'DSCR falls below 1.0x', text:
+      `Minimum DSCR over the hold is ${fmtX(r.minDscr)} — in at least one year, NOI doesn’t fully cover debt service. Most lenders won’t approve this loan as modeled.` });
+  } else if (r.minDscr < 1.20) {
+    insights.push({ tier: 'watch', title: 'Debt coverage is thin', text:
+      `Minimum DSCR over the hold is ${fmtX(r.minDscr)} — little cushion if NOI comes in below plan. A vacancy spike or expense overrun could squeeze cash flow fast.` });
+  } else if (r.minDscr < 1.35) {
+    insights.push({ tier: 'info', title: 'Debt coverage is adequate', text:
+      `Minimum DSCR over the hold is ${fmtX(r.minDscr)} — reasonable cushion, roughly in line with what permanent lenders look for.` });
+  } else {
+    insights.push({ tier: 'strong', title: 'Comfortable debt coverage', text:
+      `Minimum DSCR over the hold is ${fmtX(r.minDscr)} — healthy cushion against a soft year in NOI.` });
+  }
+
+  // 4. Break-even occupancy cushion, Year 1
+  const assumedOccY1 = 1 - inputs.vacancyYear1Pct;
+  const cushion = assumedOccY1 - r.breakEvenOccupancyY1;
+  if (r.breakEvenOccupancyY1 >= 1) {
+    insights.push({ tier: 'risk', title: 'Break-even occupancy exceeds 100%', text:
+      `Year 1 needs occupancy above 100% just to cover expenses and debt service (${fmtPct(r.breakEvenOccupancyY1)}) — this deal is cash-negative from day one at the modeled rents and vacancy.` });
+  } else if (cushion < 0) {
+    insights.push({ tier: 'risk', title: 'Assumed occupancy is below break-even', text:
+      `Break-even occupancy (${fmtPct(r.breakEvenOccupancyY1)}) is higher than the assumed Year-1 occupancy (${fmtPct(assumedOccY1)}) — as modeled, Year 1 doesn’t cover its own costs even before accounting for anything going wrong.` });
+  } else if (cushion < 0.08) {
+    insights.push({ tier: 'watch', title: 'Thin occupancy cushion in Year 1', text:
+      `Break-even occupancy is ${fmtPct(r.breakEvenOccupancyY1)} against an assumed ${fmtPct(assumedOccY1)} occupancy — only about ${fmtPct(cushion)} of margin before the property stops covering its own costs.` });
+  } else {
+    insights.push({ tier: 'strong', title: 'Healthy occupancy cushion', text:
+      `Break-even occupancy is ${fmtPct(r.breakEvenOccupancyY1)}, well below the assumed ${fmtPct(assumedOccY1)} — meaningful room for vacancy or rent softness before the deal goes cash-negative.` });
+  }
+
+  // 5. Exit cap-rate sensitivity spread
+  const validSens = r.sensitivity.filter(s => isFinite(s.irrCash));
+  if (validSens.length >= 2) {
+    const first = validSens[0], last = validSens[validSens.length - 1];
+    const spread = first.irrCash - last.irrCash;
+    const perHalfPt = spread / (validSens.length - 1);
+    insights.push({ tier: Math.abs(spread) > 0.10 ? 'watch' : 'info', title: 'Exit cap rate matters', text:
+      `Across the ${fmtPct(first.capRate, 1)}–${fmtPct(last.capRate, 1)} sensitivity range, cash IRR moves from ${fmtPct(first.irrCash)} to ${fmtPct(last.irrCash)} — roughly ${fmtPct(Math.abs(perHalfPt))} of IRR per 0.5-point move in exit cap rate.${Math.abs(spread) > 0.10 ? ' This deal’s return is highly dependent on where cap rates land at exit.' : ''}` });
+  }
+
+  // 6. How much of the return leans on tax benefits
+  const y1TaxSavings = r.taxSavingsByYear[0] || 0;
+  const y1TaxSavingsPctOfEquity = y1TaxSavings / r.equityRequired;
+  if (y1TaxSavingsPctOfEquity > 0.15) {
+    insights.push({ tier: 'info', title: 'Tax benefits are doing a lot of work', text:
+      `Year-1 depreciation tax savings (${fmtUSD(y1TaxSavings)}) equal roughly ${fmtPct(y1TaxSavingsPctOfEquity)} of the equity invested — a meaningful share of the after-tax return depends on being able to use these deductions (confirm with your CPA, especially if passive-activity loss limits apply).` });
+  }
+
+  // 7. Payback period
+  if (r.paybackYears && r.paybackYears <= r.yearsHeld) {
+    insights.push({ tier: 'strong', title: 'Cash flow pays back equity before exit', text:
+      `At the average annual cash-on-cash return, it takes about ${r.paybackYears.toFixed(1)} years of operating cash flow alone to recover the invested equity — before counting any sale proceeds.` });
+  } else if (r.paybackYears) {
+    insights.push({ tier: 'info', title: 'Payback relies on the sale', text:
+      `Operating cash flow alone would take about ${(r.paybackYears > 30 ? '30+' : r.paybackYears.toFixed(1))} years to return the invested equity — most of the return in this scenario comes from the sale, not annual cash flow.` });
+  }
+
+  // 8. BRRRR refinance outcome
+  if (inputs.financingMode === 'brrrr' && r.refiEvent) {
+    if (r.refiEvent.netCashOutOrIn > 0) {
+      insights.push({ tier: 'strong', title: 'Refinance returns cash to you', text:
+        `At the Year ${r.refiEvent.year} refinance, the new loan (${fmtUSD(r.refiEvent.permLoanAmount)}) exceeds the hard-money payoff by ${fmtUSD(r.refiEvent.netCashOutOrIn)} — that’s cash back in your pocket, reducing your capital left in the deal.` });
+    } else if (r.refiEvent.netCashOutOrIn < 0) {
+      insights.push({ tier: 'watch', title: 'Refinance requires new cash', text:
+        `At the Year ${r.refiEvent.year} refinance, the new loan falls short of the hard-money payoff by ${fmtUSD(-r.refiEvent.netCashOutOrIn)} — plan to bring additional cash to close the refinance, or revisit the assumptions driving loan sizing (${r.refiEvent.binding}-constrained).` });
+    }
+  }
+
+  return insights;
+}
+
+function renderInsights(inputs, r) {
+  const insights = buildInsights(inputs, r);
+  const el = document.getElementById('insightsList');
+  if (!insights.length) { el.innerHTML = '<div class="note">Enter deal assumptions to see insights.</div>'; return; }
+  el.innerHTML = insights.map(ins => `
+    <div class="insight-item tier-${ins.tier}">
+      <span class="insight-badge">${TIER_LABEL[ins.tier]}</span>
+      <div class="insight-body">
+        <strong>${ins.title}</strong>
+        <span>${ins.text}</span>
+      </div>
+    </div>`).join('');
+}
+
+/* ============================================================
+   MASTER RECALC
+   ============================================================ */
+function recalcAndRender() {
+  const inputs = collectInputs();
+  const results = runModel(inputs);
+  results.__exitCapRate = inputs.exitCapRate;
+  renderDealSummary(inputs, results);
+  renderStatCards(results);
+  renderInsights(inputs, results);
+  renderCashFlowTable(results);
+  renderSensitivityTable(results);
+  renderCashFlowChart(results);
+  renderSensitivityChart(results);
+  renderWarnings(inputs, results);
+}
+
+let recalcTimer = null;
+function scheduleRecalc() {
+  clearTimeout(recalcTimer);
+  recalcTimer = setTimeout(recalcAndRender, 80);
+}
+
+/* ============================================================
+   EVENT WIRING
+   ============================================================ */
+document.querySelectorAll('.input-panel input, .input-panel select').forEach(el => {
+  el.addEventListener('input', scheduleRecalc);
+  el.addEventListener('change', scheduleRecalc);
+});
+
+document.getElementById('modeStandardBtn').addEventListener('click', () => {
+  financingMode = 'standard';
+  document.getElementById('modeStandardBtn').classList.add('active');
+  document.getElementById('modeBrrrrBtn').classList.remove('active');
+  document.getElementById('standardFields').style.display = '';
+  document.getElementById('brrrrFields').style.display = 'none';
+  scheduleRecalc();
+});
+document.getElementById('modeBrrrrBtn').addEventListener('click', () => {
+  financingMode = 'brrrr';
+  document.getElementById('modeBrrrrBtn').classList.add('active');
+  document.getElementById('modeStandardBtn').classList.remove('active');
+  document.getElementById('standardFields').style.display = 'none';
+  document.getElementById('brrrrFields').style.display = '';
+  scheduleRecalc();
+});
+
+document.getElementById('addRentRowBtn').addEventListener('click', () => {
+  addRentRow('New unit type', 1, 1500);
+  scheduleRecalc();
+});
+
+window.addEventListener('resize', () => { renderCashFlowChart(window.__lastResults || {}); });
+
+/* ============================================================
+   INIT — sample deal so the tool is usable on first load
+   ============================================================ */
+addRentRow('1BD/1BA (renovated)', 3, 2100);
+addRentRow('2BD/2BA (renovated)', 1, 2600);
+addRentRow('1BD/1BA (in-place tenant)', 1, 1600);
+addRentRow('3BD/1BA (in-place tenant)', 1, 1900);
+
+recalcAndRender();
+</script>
+</body>
+</html>
